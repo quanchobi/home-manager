@@ -27,6 +27,8 @@
         ./apps/starship.nix
         ./apps/password-store.nix
         ./apps/neovim.nix
+        ./apps/git.nix
+        ./apps/tmux.nix
         ];
 
         # Optionally use extraSpecialArgs
