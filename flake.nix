@@ -29,6 +29,8 @@
         ./apps/neovim.nix
         ./apps/git.nix
         ./apps/tmux.nix
+        ./apps/eza.nix
+        ./apps/spotifyd.nix
         ];
 
         # Optionally use extraSpecialArgs

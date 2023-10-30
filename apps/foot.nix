@@ -6,13 +6,14 @@
         term = "xterm-256color";
         font = "IntoneMono Nerd Font:size=12";
       };
+
       csd = {
         preferred = "none";
-
       };
+
       colors = {
         foreground = "dcd7ba";
-        background = "1f1f28";
+        background = "262626";
 
         selection-foreground = "c8c093";
         selection-background = "2d4f67";
