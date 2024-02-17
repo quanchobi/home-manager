@@ -32,8 +32,6 @@
 
         set -g pane-active-border-style 'fg=magenta,bg=default'
         set -g pane-border-style 'fg=brightblack,bg=default'
-
-        # TODO: Spotify integration
         '';
     };
 }
