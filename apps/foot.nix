@@ -4,7 +4,7 @@
     settings = {
       main = {
         term = "xterm-256color";
-        font = "IntoneMono Nerd Font:size=12";
+        font = "IntoneMono Nerd Font:size=14";
       };
 
       csd = {

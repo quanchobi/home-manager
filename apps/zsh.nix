@@ -1,7 +1,7 @@
 {
     programs.zsh = {
         enable = true;
-        enableAutosuggestions = true;
+        autosuggestion.enable = true;
         enableCompletion = true;
         syntaxHighlighting = {
             enable = true;
@@ -24,6 +24,8 @@
                   . '/nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh'
                 fi
             # End Nix
+            # Cargo
+                export PATH=/home/anderson/.cargo/bin:$PATH
         '';
         envExtra = ''
             . "$HOME/.cargo/env"
