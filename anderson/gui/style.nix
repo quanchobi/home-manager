@@ -1,9 +1,4 @@
-{
-  pkgs,
-  config,
-  inputs,
-  ...
-}:
+{ pkgs, config, ... }:
 {
   imports = [ ];
 
@@ -12,7 +7,7 @@
   config = {
     stylix = {
       enable = config.system.gui.enable;
-      image = "${inputs.self}/assets/desktop.jpg";
+      image = ../../../assets/desktop.jpg;
       # Manually enabled tmux
       targets.tmux.enable = false;
       targets.kitty.enable = true;
