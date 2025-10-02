@@ -7,7 +7,7 @@
   config = {
     stylix = {
       enable = config.system.gui.enable;
-      image = ../../assets/desktop.jpg
+      image = ../../assets/desktop.jpg;
       # Manually enabled tmux
       targets.tmux.enable = false;
       targets.kitty.enable = true;
