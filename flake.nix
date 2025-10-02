@@ -38,14 +38,22 @@
           config = {
             home-manager.useGlobalPkgs = true;
             home-manager.useUserPackages = true;
-            home-manager.extraSpecialArgs = { inherit inputs; };
-            home-manager.users.anderson = import ./anderson/home.nix;
-
-            home-manager.sharedModules = [
+            home-manager.extraSpecialArgs = {
+              inherit inputs;
+              systemGuiEnable = config.system.gui.enable;
+            };
+            home-manager.users.anderson =
               {
-                system.gui.enable = lib.mkForce config.system.gui.enable;
-              }
-            ];
+                config,
+                pkgs,
+                lib,
+                systemGuiEnable,
+                ...
+              }:
+              {
+                imports = [ ./anderson/home.nix ];
+                system.gui.enable = systemGuiEnable;
+              };
           };
         };
     };
