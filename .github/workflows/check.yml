@@ -26,22 +26,19 @@ jobs:
       - name: Setup Nix cache
         uses: DeterminateSystems/magic-nix-cache-action@main
 
-      - name: Format code with treefmt
-        run: nix fmt
+      - name: Check flake formatting with treefmt
+        run: nix fmt -- --check .
 
       - name: Run flake check
         run: nix flake check --all-systems
 
-      - name: Check flake formatting with treefmt
-        run: nix build .#checks.x86_64-linux.formatting
-
-      - name: Build default package
-        run: nix build .#
-
-      - name: Check for evaluation errors
+      - name: Check module evaluation
         run: |
-          nix eval .#nixosModules.default --apply 'x: true' 
-          nix eval .#homeManagerModules.default --apply 'x: true'
+          nix eval .#nixosModules.default --apply 'x: true'
+
+      - name: Build home configuration
+        run: |
+          nix build .#homeConfigurations.anderson.activationPackage --no-link
 
   deadnix-check:
     runs-on: ubuntu-latest
@@ -53,6 +50,9 @@ jobs:
 
       - name: Install Nix
         uses: DeterminateSystems/nix-installer-action@main
+
+      - name: Setup Nix cache
+        uses: DeterminateSystems/magic-nix-cache-action@main
 
       - name: Check for dead code with deadnix
         run: |
@@ -68,6 +68,9 @@ jobs:
 
       - name: Install Nix
         uses: DeterminateSystems/nix-installer-action@main
+
+      - name: Setup Nix cache
+        uses: DeterminateSystems/magic-nix-cache-action@main
 
       - name: Run statix linter
         run: |
