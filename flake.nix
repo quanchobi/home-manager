@@ -17,6 +17,7 @@
     {
       self,
       nixpkgs,
+      nixvim,
       home-manager,
       stylix,
       zen-browser,
