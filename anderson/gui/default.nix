@@ -5,9 +5,6 @@
   config,
   ...
 }:
-let
-  unstable-pkgs = inputs.nixpkgs-unstable.legacyPackages.${pkgs.system};
-in
 {
   imports = [
     ./foot.nix

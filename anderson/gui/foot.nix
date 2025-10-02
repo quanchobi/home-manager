@@ -6,7 +6,7 @@
 
   config = {
     programs.foot = {
-      enable = config.system.gui.enable;
+      inherit (config.system.gui) enable;
       settings = {
         main = {
           term = "xterm-256color";

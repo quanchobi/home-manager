@@ -6,7 +6,7 @@
 
   config = {
     programs.obs-studio = {
-      enable = config.system.gui.enable;
+      inherit (config.system.gui) enable;
       plugins = [ pkgs.obs-studio-plugins.wlrobs ];
     };
   };

@@ -1,7 +1,7 @@
 { pkgs, ... }:
 {
   programs.kitty = {
-    enable = config.system.gui.enable;
+    inherit (config.system.gui) enable;
 
     font = {
       package = pkgs.nerd-fonts.intone-mono;

@@ -6,12 +6,14 @@
 
   config = {
     stylix = {
-      enable = config.system.gui.enable;
+      inherit (config.system.gui) enable;
       image = ../../assets/desktop.jpg;
       # Manually enabled tmux
-      targets.tmux.enable = false;
-      targets.kitty.enable = true;
-      targets.qt.enable = false;
+      targets = {
+        tmux.enable = false;
+        kitty.enable = true;
+        qt.enable = false;
+      };
       base16Scheme = "${pkgs.base16-schemes}/share/themes/espresso.yaml";
     };
 

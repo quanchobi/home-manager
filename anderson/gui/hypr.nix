@@ -3,7 +3,7 @@
   # All in one desktop environment. Dropped AGS due to a breaking update and being too lazy to fix it.
   # Hyprland, a lightweight Wayland window manager
   wayland.windowManager.hyprland = {
-    enable = config.system.gui.enable;
+    inherit (config.system.gui) enable;
 
     settings = {
       env = [

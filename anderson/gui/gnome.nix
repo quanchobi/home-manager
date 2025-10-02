@@ -1,4 +1,9 @@
-{ pkgs, lib, config, ... }:
+{
+  pkgs,
+  lib,
+  config,
+  ...
+}:
 {
   config = lib.mkIf config.system.gui.enable {
     home.packages = with pkgs.gnomeExtensions; [
@@ -15,7 +20,7 @@
         uris = [ "qemu:///system" ];
       };
       "org/gnome/desktop/interface" = {
-        #color-scheme = "prefer-dark";
+        color-scheme = "prefer-dark";
         enable-hot-corners = false;
       };
 
