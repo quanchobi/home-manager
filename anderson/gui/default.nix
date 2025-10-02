@@ -3,10 +3,11 @@
   pkgs,
   lib,
   config,
+  systemGuiEnable ? true,
   ...
 }:
 {
-  imports = lib.optionals config.system.gui.enable [
+  imports = lib.optionals systemGuiEnable [
     ./foot.nix
     ./gnome.nix
     ./obs.nix
