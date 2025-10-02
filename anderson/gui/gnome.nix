@@ -20,7 +20,7 @@
         uris = [ "qemu:///system" ];
       };
       "org/gnome/desktop/interface" = {
-        color-scheme = "prefer-dark";
+        color-scheme = lib.mkForce "prefer-dark";
         enable-hot-corners = false;
       };
 
