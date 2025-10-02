@@ -7,6 +7,7 @@
 }:
 {
   imports = [
+    inputs.stylix.homeManagerModules.stylix
     ./options.nix
     ./accounts
     ./cli
