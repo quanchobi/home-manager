@@ -41,8 +41,10 @@ jobs:
           nix eval .#nixosModules.default --apply 'x: true'
 
       - name: Build home configuration
+        env:
+          NIXPKGS_ALLOW_UNFREE: 1
         run: |
-          nix build .#homeConfigurations.anderson.activationPackage --no-link
+          nix build .#homeConfigurations.anderson.activationPackage --no-link --impure
 
   deadnix-check:
     runs-on: ubuntu-latest

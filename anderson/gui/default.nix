@@ -21,7 +21,6 @@
       inputs.zen-browser.packages."${system}".default
       kdePackages.okular
       love
-      lunar-client
       obsidian
       prismlauncher
       ryujinx
