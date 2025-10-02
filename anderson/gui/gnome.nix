@@ -1,10 +1,6 @@
 { pkgs, lib, config, ... }:
-lib.mkIf config.system.gui.enable {
-  imports = [ ];
-
-  options = { };
-
-  config = {
+{
+  config = lib.mkIf config.system.gui.enable {
     home.packages = with pkgs.gnomeExtensions; [
       blur-my-shell
       dash-to-dock
