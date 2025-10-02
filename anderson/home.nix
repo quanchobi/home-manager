@@ -1,5 +1,7 @@
 {
   inputs,
+  lib,
+  config,
   ...
 }:
 {
@@ -8,8 +10,7 @@
     ./options.nix
     #./accounts # disabled until I finish it
     ./cli
-    ./gui
-  ];
+  ] ++ lib.optionals config.system.gui.enable [ ./gui ];
 
   # Home Manager needs a bit of information about you and the paths it should
   # manage.
