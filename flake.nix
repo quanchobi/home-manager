@@ -26,11 +26,27 @@
 
       # NixOS module for home-manager
       nixosModules.default =
-        { config, pkgs, ... }:
         {
-          home-manager.useUserPackages = true;
-          home-manager.extraSpecialArgs = { inherit inputs; };
-          home-manager.users.anderson = import ./anderson/home.nix;
+          config,
+          lib,
+          pkgs,
+          ...
+        }:
+        {
+          imports = [ ./anderson/options.nix ];
+
+          config = {
+            home-manager.useGlobalPkgs = true;
+            home-manager.useUserPackages = true;
+            home-manager.extraSpecialArgs = { inherit inputs; };
+            home-manager.users.anderson = import ./anderson/home.nix;
+
+            home-manager.sharedModules = [
+              {
+                system.gui.enable = lib.mkForce config.system.gui.enable;
+              }
+            ];
+          };
         };
     };
 }
