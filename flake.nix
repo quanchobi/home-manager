@@ -31,7 +31,7 @@
         };
         modules = [ 
 	./anderson/home.nix
-	inputs.nixvim.homeManagerModules.default
+	nixvim.homeManagerModules.default
 	];
       };
 
@@ -62,7 +62,10 @@
                 ...
               }:
               {
-                imports = [ ./anderson/home.nix ];
+                imports = [ 
+		  ./anderson/home.nix
+		  nixvim.homeManagerModules.default
+		];
                 system.gui.enable = systemGuiEnable;
               };
           };
