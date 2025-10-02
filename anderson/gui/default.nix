@@ -6,7 +6,7 @@
   ...
 }:
 {
-  imports = [
+  imports = lib.optionals config.system.gui.enable [
     ./foot.nix
     ./gnome.nix
     ./obs.nix
