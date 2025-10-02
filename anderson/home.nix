@@ -9,7 +9,7 @@
   imports = [
     inputs.stylix.homeModules.stylix
     ./options.nix
-    ./accounts
+    #./accounts # disabled until I finish it
     ./cli
     ./gui
   ];
