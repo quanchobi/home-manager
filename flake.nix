@@ -71,11 +71,14 @@
 
       # For non-NixOS systems
       homeConfigurations."anderson" = home-manager.lib.homeManagerConfiguration {
-        pkgs = nixpkgs.legacyPackages.x86_64-linux;
+        pkgs = nixpkgs.legacyPackages.x86_64-linux; # Corrected this line
         extraSpecialArgs = {
           inherit inputs;
         };
         modules = [
+          {
+            nixpkgs.config.allowUnfree = true;
+          }
           ./anderson/home.nix
           nixvim.homeManagerModules.default
         ];
@@ -96,20 +99,13 @@
               useUserPackages = true;
               extraSpecialArgs = {
                 inherit inputs;
-                systemGuiEnable = config.system.gui.enable;
               };
-              users.anderson =
-                {
-                  systemGuiEnable,
-                  ...
-                }:
-                {
-                  imports = [
-                    ./anderson/home.nix
-                    nixvim.homeManagerModules.default
-                  ];
-                  system.gui.enable = systemGuiEnable;
-                };
+              users.anderson = {
+                imports = [
+                  ./anderson/home.nix
+                  nixvim.homeManagerModules.default
+                ];
+              };
             };
           };
         };

@@ -1,12 +1,12 @@
-{ pkgs, config, ... }:
+{ pkgs, config, lib, ... }:
 {
   imports = [ ];
 
   options = { };
 
-  config = {
+  config = lib.mkIf config.system.gui.enable {
     programs.obs-studio = {
-      inherit (config.system.gui) enable;
+      enable = true;
       plugins = [ pkgs.obs-studio-plugins.wlrobs ];
     };
   };

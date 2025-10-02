@@ -1,12 +1,12 @@
-{ pkgs, config, ... }:
+{ pkgs, config, lib, ... }:
 {
   imports = [ ];
 
   options = { };
 
-  config = {
+  config = lib.mkIf config.system.gui.enable {
     stylix = {
-      inherit (config.system.gui) enable;
+      enable = true;
       image = ../../assets/desktop.jpg;
       # Manually enabled tmux
       targets = {
