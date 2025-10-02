@@ -2,6 +2,7 @@
   description = "Home Manager configuration";
 
   inputs = {
+    nixvim.url = "github:quanchobi/nixvim";
     nixpkgs.url = "github:nixos/nixpkgs/nixos-25.05";
     home-manager.url = "github:nix-community/home-manager/release-25.05";
     home-manager.inputs.nixpkgs.follows = "nixpkgs";
@@ -28,7 +29,10 @@
         extraSpecialArgs = {
           inherit inputs;
         };
-        modules = [ ./anderson/home.nix ];
+        modules = [ 
+	./anderson/home.nix
+	inputs.nixvim.homeManagerModules.default
+	];
       };
 
       # NixOS module for home-manager
