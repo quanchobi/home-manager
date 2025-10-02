@@ -27,7 +27,7 @@ jobs:
         uses: DeterminateSystems/magic-nix-cache-action@main
 
       - name: Check flake formatting with treefmt
-        run: nix fmt -- --check .
+        run: nix fmt -- --fail-on-change
 
       - name: Run flake check
         run: nix flake check --all-systems
