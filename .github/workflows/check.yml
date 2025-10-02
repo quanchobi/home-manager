@@ -22,6 +22,10 @@ jobs:
 
       - name: Install Nix
         uses: DeterminateSystems/nix-installer-action@main
+        with:
+          extra-conf: |
+            accept-flake-config = true
+            allow-import-from-derivation = true
 
       - name: Setup Nix cache
         uses: DeterminateSystems/magic-nix-cache-action@main
@@ -50,6 +54,10 @@ jobs:
 
       - name: Install Nix
         uses: DeterminateSystems/nix-installer-action@main
+        with:
+          extra-conf: |
+            accept-flake-config = true
+            allow-import-from-derivation = true
 
       - name: Setup Nix cache
         uses: DeterminateSystems/magic-nix-cache-action@main
@@ -68,6 +76,10 @@ jobs:
 
       - name: Install Nix
         uses: DeterminateSystems/nix-installer-action@main
+        with:
+          extra-conf: |
+            accept-flake-config = true
+            allow-import-from-derivation = true
 
       - name: Setup Nix cache
         uses: DeterminateSystems/magic-nix-cache-action@main

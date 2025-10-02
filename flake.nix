@@ -1,6 +1,10 @@
 {
   description = "Home Manager configuration";
 
+  nixConfig = {
+    allow-unfree = true;
+  };
+
   inputs = {
     nixvim.url = "github:quanchobi/nixvim";
 
