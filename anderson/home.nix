@@ -12,7 +12,11 @@
     ./gui
   ];
 
-  options.system.gui.enable = lib.mkEnableOption "Enable GUI programs";
+  options.system.gui.enable = lib.mkOption {
+    type = lib.types.bool;
+    default = true;
+    description = "Enable GUI applications";
+  };
 
   # Home Manager needs a bit of information about you and the paths it should
   # manage.
