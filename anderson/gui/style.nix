@@ -1,4 +1,9 @@
-{ pkgs, config, lib, ... }:
+{
+  pkgs,
+  config,
+  lib,
+  ...
+}:
 {
   imports = [ ];
 
@@ -12,7 +17,6 @@
       targets = {
         tmux.enable = false;
         kitty.enable = true;
-        qt.enable = false;
       };
       base16Scheme = "${pkgs.base16-schemes}/share/themes/espresso.yaml";
     };
