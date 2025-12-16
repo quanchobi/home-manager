@@ -42,4 +42,4 @@ imports = [
 
 **_HERE BE DRAGONS!_**
 
-Use at your own peril.
+Use at your own peril. If you want to use on a non NixOS system, you should probably not use most of the GUI modules.
