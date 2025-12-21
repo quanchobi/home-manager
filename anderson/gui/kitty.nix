@@ -2,9 +2,9 @@
 {
   programs.kitty = {
     enable = true;
-    font = {
+    font = lib.mkForce {
       package = pkgs.nerd-fonts.intone-mono;
-      name = lib.mkForce "IntoneMono Nerd Font Mono";
+      name = "IntoneMono Nerd Font Mono";
     };
 
     settings = {
