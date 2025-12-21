@@ -19,7 +19,6 @@
     with pkgs;
     [
       obsidian
-      prismlauncher
     ]
   );
 }
