@@ -74,13 +74,14 @@
         pkgs = nixpkgs.legacyPackages.x86_64-linux; # Corrected this line
         extraSpecialArgs = {
           inherit inputs;
+          isNixOS = false;
         };
         modules = [
           {
             nixpkgs.config.allowUnfree = true;
           }
           ./anderson/home.nix
-          nixvim.homeManagerModules.default
+          nixvim.homeModules.default
         ];
       };
 
@@ -103,7 +104,7 @@
               users.anderson = {
                 imports = [
                   ./anderson/home.nix
-                  nixvim.homeManagerModules.default
+                  nixvim.homeModules.default
                 ];
               };
             };

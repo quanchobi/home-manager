@@ -3,30 +3,23 @@
   pkgs,
   lib,
   config,
+  isNixOS,
   ...
 }:
 {
   imports = [
-    ./foot.nix
+    ./kitty.nix
+  ]
+  ++ lib.optionals isNixOS [
     ./gnome.nix
-    ./obs.nix
     ./style.nix
   ];
 
-  config = lib.mkIf config.system.gui.enable {
-    home.packages = with pkgs; [
-      adwaita-icon-theme
-      celluloid
-      freecad-wayland
-      inputs.zen-browser.packages."${system}".default
-      kdePackages.okular
-      love
+  home.packages = lib.mkIf config.system.gui.enable (
+    with pkgs;
+    [
       obsidian
       prismlauncher
-      ryujinx
-      vesktop
-      wl-clipboard
-      zoom-us
-    ];
-  };
+    ]
+  );
 }
