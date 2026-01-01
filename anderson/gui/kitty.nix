@@ -16,59 +16,46 @@
       italic_font = "auto";
       bold_italic_font = "auto";
       font_size = "12.0";
-      name = "Carbonfox";
-      author = "EdenEast";
-      license = "MIT";
-      blurb = "Carbonfox theme from the neovim colorscheme nightfox.nvim.";
-      # upstream = "https://github.com/EdenEast/nightfox.nvim/blob/main/extra/carbonfox/kitty.conf";
-      # The basic colors
-      foreground = "#f2f4f8";
-      background = "#161616";
-      selection_foreground = "#f2f4f8";
-      selection_background = "#2a2a2a";
 
-      # Cursor colors
-      cursor = "#f2f4f8";
-      cursor_text_color = "#161616";
+      # Special Colors
+      foreground = "#9a9fa6"; # base05
+      background = "#212121"; # base00
+      cursor = "#9a9fa6"; # base05
+      selection_background = "#9a9fa6"; # base05
+      selection_foreground = "#212121"; # base00
 
-      # URL underline color when hovering with mouse
-      url_color = "#25be6a";
+      # The 16 Terminal Colors
+      # black
+      color0 = "#212121"; # base00
+      color8 = "#6c6d70"; # base03
 
-      # kitty window border colors and terminal bell colors
-      active_border_color = "#78a9ff";
-      inactive_border_color = "#535353";
-      bell_border_color = "#3ddbd9";
-      # visual_bell_color = "none"; # Commented out as it's not a color
+      # red
+      color1 = "#b14956"; # base08
+      color9 = "#ec5f67"; # base12
 
-      # Tab bar colors
-      active_tab_foreground = "#0c0c0c";
-      active_tab_background = "#78a9ff";
-      inactive_tab_foreground = "#6e6f70";
-      inactive_tab_background = "#2a2a2a";
-      # tab_bar_background = "none"; # Commented out as it's not a color
-      # tab_bar_margin_color = "none"; # Commented out as it's not a color
+      # green
+      color2 = "#91b377"; # base0B
+      color10 = "#88e985"; # base14
 
-      # The basic 16 colors
-      color0 = "#282828"; # black
-      color8 = "#484848"; # bright black
-      color1 = "#ee5396"; # red
-      color9 = "#f16da6"; # bright red
-      color2 = "#25be6a"; # green
-      color10 = "#46c880"; # bright green
-      color3 = "#ebcb8b"; # yellow
-      color11 = "#f0d399"; # bright yellow
-      color4 = "#78a9ff"; # blue
-      color12 = "#8cb6ff"; # bright blue
-      color5 = "#be95ff"; # magenta
-      color13 = "#c8a5ff"; # bright magenta
-      color6 = "#33b1ff"; # cyan
-      color14 = "#52bdff"; # bright cyan
-      color7 = "#dfdfe0"; # white
-      color15 = "#e4e4e5"; # bright white
+      # yellow
+      color3 = "#5485c0"; # base0A
+      color11 = "#fdc253"; # base13
 
-      # The remaining colors (color16 and color17)
-      color16 = "#3ddbd9";
-      color17 = "#ff7eb6";
+      # blue
+      color4 = "#7b8fa4"; # base0D
+      color12 = "#5485c0"; # base16
+
+      # magenta
+      color5 = "#a5779e"; # base0E
+      color13 = "#bf83c0"; # base17
+
+      # cyan
+      color6 = "#7fcccb"; # base0C
+      color14 = "#58c2c0"; # base15
+
+      # white
+      color7 = "#9a9fa6"; # base05
+      color15 = "#ffffff"; # base07
     };
   };
 }

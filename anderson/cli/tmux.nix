@@ -21,20 +21,24 @@
       # Theming
             set-option -g status-position "top" # put status at top instead of bottom, since that is where nvim goes
 
+      set -g window-status-current-format '#[fg=#a5779e,bg=#15171c] *#I #W'
+          # Inactive Window
+          set -g window-status-format '#[fg=#6c6d70,bg=#212121] #I #W'
+          # Last Active Window
+          set -g window-status-last-style 'fg=#ffffff,bg=#1c1c1c'
 
-            set -g window-status-current-format '#[fg=magenta,bg=#1c2023] *#I #W'
-            set -g window-status-format '#[fg=gray,bg=#1c2023] #I #W'
-            set -g window-status-last-style 'fg=white,bg=black'
+          # Message / Command Prompt
+          set -g message-command-style bg=default,fg=#5485c0
+          set -g message-style bg=default,fg=#5485c0
 
-            set -g message-command-style bg=default,fg=yellow
-            set -g message-style bg=default,fg=yellow
+          # Panes
+          set -g pane-active-border-style 'fg=#a5779e,bg=default'
+          set -g pane-border-style 'fg=#383838,bg=default'
 
-            set -g pane-active-border-style 'fg=magenta,bg=default'
-            set -g pane-border-style 'fg=brightblack,bg=default'
-
-            set -g status-style 'bg=#1c2023' # transparent
-            set -g status-left "#[fg=blue,bold,bg=#1c2023]   #S   "
-            set -g status-right "#[fg=#b4befe,bold,bg=#1c2023]%a %Y-%m-%d 󱑒 %l:%M %p"
+          # Status Bar
+          set -g status-style 'bg=#15171c'
+          set -g status-left "#[fg=#7b8fa4,bg=#15171c]   #S   "
+          set -g status-right "#[fg=#7b8fa4,bg=#15171c]%a %Y-%m-%d 󱑒 %l:%M %p"
     '';
   };
 }
