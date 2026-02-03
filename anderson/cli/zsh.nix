@@ -12,8 +12,8 @@
       zstyle ':completion:*' format $'\e[2;37mCompleting %d\e[m'
       source <(carapace _carapace)
     '';
-    profileExtra = '''';
-    envExtra = '''';
+    profileExtra = "";
+    envExtra = "";
     sessionVariables = { };
     shellAliases = { };
   };

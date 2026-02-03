@@ -88,7 +88,6 @@
       # NixOS module for home-manager
       nixosModules.default =
         {
-          config,
           ...
         }:
         {
