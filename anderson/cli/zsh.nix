@@ -1,17 +1,21 @@
 {
   programs.zsh = {
     enable = true;
-    autosuggestion.enable = true;
+    autosuggestion = {
+      enable = true;
+      strategy = [
+        "completion"
+      ];
+    };
     enableCompletion = true;
     syntaxHighlighting = {
       enable = true;
       styles = { };
     };
-    initContent = ''
-      export CARAPACE_BRIDGES='zsh,fish,bash,inshellisense' # optional
-      zstyle ':completion:*' format $'\e[2;37mCompleting %d\e[m'
-      source <(carapace _carapace)
-    '';
+    history = {
+      append = true;
+    };
+    initContent = "";
     profileExtra = "";
     envExtra = "";
     sessionVariables = { };
