@@ -71,7 +71,7 @@
 
       # For non-NixOS systems
       homeConfigurations."anderson" = home-manager.lib.homeManagerConfiguration {
-        pkgs = nixpkgs.legacyPackages.x86_64-linux; # Corrected this line
+        pkgs = nixpkgs.legacyPackages.x86_64-linux;
         extraSpecialArgs = {
           inherit inputs;
           isNixOS = false;
@@ -81,6 +81,20 @@
             nixpkgs.config.allowUnfree = true;
           }
           ./anderson/home.nix
+          nixvim.homeModules.default
+        ];
+      };
+      homeConfigurations."jacob.hanks@canonical.com" = home-manager.lib.homeManagerConfiguration {
+        pkgs = nixpkgs.legacyPackages.x86_64-linux;
+        extraSpecialArgs = {
+          inherit inputs;
+          isNixOS = false;
+        };
+        modules = [
+          {
+            nixpkgs.config.allowUnfree = true;
+          }
+          ./jacob.hanks_canonical.com/home.nix
           nixvim.homeModules.default
         ];
       };
