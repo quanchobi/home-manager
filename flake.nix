@@ -6,6 +6,9 @@
   };
 
   inputs = {
+    nixgl.url = "github:nix-community/nixGL";
+    niri.url = "github:sodiboo/niri-flake";
+
     nixvim.url = "github:quanchobi/nixvim";
 
     nixpkgs.url = "github:nixos/nixpkgs/nixos-25.11";
@@ -19,11 +22,6 @@
 
     treefmt-nix = {
       url = "github:numtide/treefmt-nix";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
-
-    zen-browser = {
-      url = "github:0xc000022070/zen-browser-flake";
       inputs.nixpkgs.follows = "nixpkgs";
     };
   };

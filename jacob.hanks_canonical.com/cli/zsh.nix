@@ -15,9 +15,6 @@
     history = {
       append = true;
     };
-    initContent = "";
-    profileExtra = "";
-    envExtra = "";
     sessionVariables = { };
     shellAliases = { };
   };
