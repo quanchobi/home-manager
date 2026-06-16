@@ -12,28 +12,41 @@
   home.packages = with pkgs; [
     swaybg
     xwayland-satellite
+    gnome-calendar
   ];
 
-  nixGL.packages = inputs.nixgl.packages;
-  nixGL.defaultWrapper = "mesa";
+  home.pointerCursor = {
+    gtk.enable = true;
+    x11.enable = true;
+    package = pkgs.posy-cursors;
+    name = "Posy_Cursor_Black";
+    size = 24;
+  };
 
-  programs.obs-studio = {
+  gtk = {
     enable = true;
-    package = (config.lib.nixGL.wrap pkgs.obs-studio).overrideAttrs (old: {
-      # We wrap the wrapper to ensure these variables are set at runtime
-      postFixup = (old.postFixup or "") + ''
-        wrapProgram $out/bin/obs \
-          --set PIPEWIRE_RUNTIME_DIR "/run/user/$(id -u)" \
-          --set XDG_RUNTIME_DIR "/run/user/$(id -u)" \
-          --set XDG_CURRENT_DESKTOP "niri" \
-          --set XDG_SESSION_TYPE "wayland"
-      '';
-    });
+    cursorTheme = {
+      package = pkgs.posy-cursors;
+      name = "Posy_Cursor_Black";
+    };
+  };
+
+  services.mako = {
+    enable = true;
+    settings = {
+      font = "IntoneMono Nerd Font Mono";
+      background-color = "#2d2d2d";
+      text-color = "#ffffff";
+      border-color = "#3a3a3a";
+      border-radius = 5;
+      border-size = 2;
+      default-timeout = 5000;
+      anchor = "top-center";
+    };
   };
 
   programs.waybar = {
     enable = true;
-    #package = config.lib.nixGL.wrap pkgs.waybar;
     systemd.enable = true;
     settings = {
       mainBar = {
@@ -138,17 +151,14 @@
   };
 
   programs.swaylock = {
-    package = config.lib.nixGL.wrap pkgs.swaylock;
     enable = true;
   };
 
   programs.fuzzel = {
-    package = config.lib.nixGL.wrap pkgs.fuzzel;
     enable = true;
   };
 
   programs.alacritty = {
-    package = config.lib.nixGL.wrap pkgs.alacritty;
     enable = true;
     settings.window.decorations = "none";
   };
@@ -164,8 +174,9 @@
 
   programs.niri = {
     enable = true;
-    package = config.lib.nixGL.wrap inputs.niri.packages.${pkgs.system}.niri-stable;
+    package = inputs.niri.packages.${pkgs.system}.niri-stable;
     settings = {
+      cursor.theme = "Posy_Cursor_Black";
       layout = {
         gaps = 8;
         border.enable = false;
@@ -178,10 +189,10 @@
       window-rules = [
         {
           geometry-corner-radius = {
-            top-left = 4.0;
-            top-right = 4.0;
-            bottom-left = 4.0;
-            bottom-right = 4.0;
+            top-left = 8.0;
+            top-right = 8.0;
+            bottom-left = 8.0;
+            bottom-right = 8.0;
           };
           clip-to-geometry = true;
         }

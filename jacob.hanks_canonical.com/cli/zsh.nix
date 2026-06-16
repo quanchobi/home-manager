@@ -8,6 +8,10 @@
       ];
     };
     enableCompletion = true;
+    completionInit = ''
+      autoload -Uz compinit && compinit
+      autoload -Uz bashcompinit && bashcompinit
+    '';
     syntaxHighlighting = {
       enable = true;
       styles = { };

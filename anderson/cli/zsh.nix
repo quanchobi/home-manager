@@ -18,7 +18,10 @@
     initContent = "";
     profileExtra = "";
     envExtra = "";
-    sessionVariables = { };
+    sessionVariables = {
+      "DEBFULLNAME" = "Jacob Hanks";
+      "DEBEMAIL" = "jacob.hanks@canonical.com";
+    };
     shellAliases = { };
   };
 }

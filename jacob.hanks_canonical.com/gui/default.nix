@@ -8,7 +8,7 @@
 {
   imports = [
     ./kitty.nix
-    ./hypr.nix
+    #./hypr.nix
     ./firefox.nix
   ]
   ++ lib.optionals isNixOS [

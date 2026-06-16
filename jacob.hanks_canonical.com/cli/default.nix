@@ -7,6 +7,7 @@
     ./starship.nix
     ./tmux.nix
     ./zsh.nix
+    ./opencode.nix
     ./sesh.nix
     ./fzf.nix
   ];

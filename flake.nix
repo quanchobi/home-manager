@@ -6,7 +6,6 @@
   };
 
   inputs = {
-    nixgl.url = "github:nix-community/nixGL";
     niri.url = "github:sodiboo/niri-flake";
 
     nixvim.url = "github:quanchobi/nixvim";
