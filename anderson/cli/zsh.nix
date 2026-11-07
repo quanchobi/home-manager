@@ -16,6 +16,9 @@
       append = true;
     };
     initContent = "";
+    initExtra = ''
+      export PATH="$PATH:$HOME/.local/bin"
+    '';
     profileExtra = "";
     envExtra = "";
     sessionVariables = {

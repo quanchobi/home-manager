@@ -24,6 +24,9 @@
     # want to update the value, then make sure to first check the Home Manager
     # release notes.
     stateVersion = "24.05"; # DO NOT CHANGE
+    sessionPath = [
+      "$HOME/.local/bin"
+    ];
   };
 
   # Let Home Manager install and manage itself.

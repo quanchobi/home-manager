@@ -7,9 +7,9 @@
 }:
 {
   imports = [
-    ./kitty.nix
   ]
   ++ lib.optionals isNixOS [
+    ./kitty.nix
     ./gnome.nix
     ./style.nix
   ];

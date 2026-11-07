@@ -19,6 +19,7 @@
     };
     history = {
       append = true;
+      expireDuplicatesFirst = true;
     };
     shellAliases = { };
     plugins = [
