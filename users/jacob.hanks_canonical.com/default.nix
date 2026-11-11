@@ -6,7 +6,6 @@
 {
   imports = [
     ../../modules/home.nix
-    ./starship.nix
     ./opencode.nix
     #./hypr.nix
     ./firefox.nix
