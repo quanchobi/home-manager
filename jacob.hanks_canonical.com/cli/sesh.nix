@@ -1,5 +1,0 @@
-{
-  programs.sesh = {
-    enable = true;
-  };
-}

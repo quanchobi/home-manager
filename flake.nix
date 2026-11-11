@@ -41,6 +41,24 @@
       ];
       forAllSystems = nixpkgs.lib.genAttrs systems;
 
+      # Standalone (non-NixOS) home-manager config for users/<dir>.
+      mkHome =
+        dir:
+        home-manager.lib.homeManagerConfiguration {
+          pkgs = nixpkgs.legacyPackages.x86_64-linux;
+          extraSpecialArgs = {
+            inherit inputs;
+            isNixOS = false;
+          };
+          modules = [
+            {
+              nixpkgs.config.allowUnfree = true;
+            }
+            ./users/${dir}
+            nixvim.homeModules.default
+          ];
+        };
+
       treefmtEval = forAllSystems (
         system:
         treefmt-nix.lib.evalModule nixpkgs.legacyPackages.${system} {
@@ -67,33 +85,9 @@
       });
 
       # For non-NixOS systems
-      homeConfigurations."anderson" = home-manager.lib.homeManagerConfiguration {
-        pkgs = nixpkgs.legacyPackages.x86_64-linux;
-        extraSpecialArgs = {
-          inherit inputs;
-          isNixOS = false;
-        };
-        modules = [
-          {
-            nixpkgs.config.allowUnfree = true;
-          }
-          ./anderson/home.nix
-          nixvim.homeModules.default
-        ];
-      };
-      homeConfigurations."jacob.hanks@canonical.com" = home-manager.lib.homeManagerConfiguration {
-        pkgs = nixpkgs.legacyPackages.x86_64-linux;
-        extraSpecialArgs = {
-          inherit inputs;
-          isNixOS = false;
-        };
-        modules = [
-          {
-            nixpkgs.config.allowUnfree = true;
-          }
-          ./jacob.hanks_canonical.com/home.nix
-          nixvim.homeModules.default
-        ];
+      homeConfigurations = {
+        anderson = mkHome "anderson";
+        "jacob.hanks@canonical.com" = mkHome "jacob.hanks_canonical.com";
       };
 
       # NixOS module for home-manager
@@ -102,7 +96,7 @@
           ...
         }:
         {
-          imports = [ ./anderson/options.nix ];
+          imports = [ ./modules/options.nix ];
 
           config = {
             home-manager = {
@@ -110,10 +104,11 @@
               useUserPackages = true;
               extraSpecialArgs = {
                 inherit inputs;
+                isNixOS = true;
               };
               users.anderson = {
                 imports = [
-                  ./anderson/home.nix
+                  ./users/anderson
                   nixvim.homeModules.default
                 ];
               };

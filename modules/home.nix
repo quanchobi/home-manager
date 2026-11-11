@@ -1,6 +1,9 @@
+# Shared base for every user. Per-user entry points live in users/<name>/ and
+# only carry what differs from this.
 {
   inputs,
   config,
+  lib,
   ...
 }:
 {
@@ -13,10 +16,9 @@
   ];
 
   # Home Manager needs a bit of information about you and the paths it should
-  # manage.
+  # manage. `home.username` is set by each user.
   home = {
-    username = "jacob.hanks@canonical.com";
-    homeDirectory = "/home/jacob.hanks@canonical.com";
+    homeDirectory = lib.mkDefault "/home/${config.home.username}";
     # This value determines the Home Manager release that your configuration is
     # compatible with. This helps avoid breakage when a new Home Manager release
     # introduces backwards incompatible changes.
@@ -24,9 +26,6 @@
     # You should not change this value, even if you update Home Manager. If you do
     # want to update the value, then make sure to first check the Home Manager
     # release notes.
-    sessionPath = [
-      "${config.home.homeDirectory}/.bin/bin"
-    ];
     stateVersion = "24.05"; # DO NOT CHANGE
   };
 
