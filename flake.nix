@@ -19,6 +19,11 @@
 
     stylix.url = "github:danth/stylix/release-25.11";
 
+    tmux-agent-indicator = {
+      url = "github:accessd/tmux-agent-indicator";
+      flake = false;
+    };
+
     treefmt-nix = {
       url = "github:numtide/treefmt-nix";
       inputs.nixpkgs.follows = "nixpkgs";

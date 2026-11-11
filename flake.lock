@@ -410,6 +410,7 @@
         "nixpkgs": "nixpkgs_2",
         "nixvim": "nixvim",
         "stylix": "stylix",
+        "tmux-agent-indicator": "tmux-agent-indicator",
         "treefmt-nix": "treefmt-nix_2"
       }
     },
@@ -555,6 +556,22 @@
       "original": {
         "owner": "tinted-theming",
         "repo": "base16-zed",
+        "type": "github"
+      }
+    },
+    "tmux-agent-indicator": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1786705849,
+        "narHash": "sha256-VCq7Muvpke9goN1RTcIChW+c/SkFHUSJdoEGKH+CaMQ=",
+        "owner": "accessd",
+        "repo": "tmux-agent-indicator",
+        "rev": "553c3cca8bea6fe17e0709ec04f737417de42141",
+        "type": "github"
+      },
+      "original": {
+        "owner": "accessd",
+        "repo": "tmux-agent-indicator",
         "type": "github"
       }
     },
