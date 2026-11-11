@@ -10,6 +10,9 @@ let
     rtpFilePath = "agent-indicator.tmux";
     version = "unstable-${inputs.tmux-agent-indicator.shortRev}";
     src = inputs.tmux-agent-indicator;
+    # Adds @agent-indicator-state-icons: per-state icons for hook-reported
+    # states, falling back to the per-agent @agent-indicator-icons.
+    patches = [ ./tmux-agent-indicator-state-icons.patch ];
   };
   agentIndicatorDir = "${agentIndicator}/share/tmux-plugins/agent-indicator";
 
@@ -43,11 +46,15 @@ in
         # must be set here: programs.tmux.extraConfig is emitted after plugins.
         # omp added to the default process list so its icon shows even before a
         # hook fires. Notifications (display-message popups) are off; the
-        # window-title colors already signal needs-input/done.
+        # window-title colors already signal needs-input/done. Icons are nerd
+        # font robots (md-robot_*_outline): plain for every agent, happy while
+        # running, confused when it needs input, plain again when done.
         extraConfig = ''
           set -g status-right "#{agent_indicator} #[fg=colour4]%a %Y-%m-%d 󱑒 %H:%M %p "
           set -g @agent-indicator-processes 'claude,codex,aider,cursor,opencode,omp'
           set -g @agent-indicator-notification-enabled 'off'
+          set -g @agent-indicator-icons 'default=󱙺'
+          set -g @agent-indicator-state-icons 'running=󱜚,needs-input=󱚠,done=󱙺'
         '';
       }
     ];
