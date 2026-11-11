@@ -1,5 +1,6 @@
 {
   inputs,
+  config,
   ...
 }:
 {
@@ -23,6 +24,9 @@
     # You should not change this value, even if you update Home Manager. If you do
     # want to update the value, then make sure to first check the Home Manager
     # release notes.
+    sessionPath = [
+      "${config.home.homeDirectory}/.bin/bin"
+    ];
     stateVersion = "24.05"; # DO NOT CHANGE
   };
 
