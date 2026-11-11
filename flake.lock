@@ -1,5 +1,21 @@
 {
   "nodes": {
+    "anthropic-skills": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1794004348,
+        "narHash": "sha256-dRCZrNarCCJFuvATgfW6qmwwVS5HGFXNVGOhbVZd7LA=",
+        "owner": "anthropics",
+        "repo": "skills",
+        "rev": "2c5958ecac7cee2b583967a2c4981d0f4a75c579",
+        "type": "github"
+      },
+      "original": {
+        "owner": "anthropics",
+        "repo": "skills",
+        "type": "github"
+      }
+    },
     "base16": {
       "inputs": {
         "fromYaml": "fromYaml"
@@ -405,11 +421,13 @@
     },
     "root": {
       "inputs": {
+        "anthropic-skills": "anthropic-skills",
         "home-manager": "home-manager",
         "niri": "niri",
         "nixpkgs": "nixpkgs_2",
         "nixvim": "nixvim",
         "stylix": "stylix",
+        "tmux-agent-indicator": "tmux-agent-indicator",
         "treefmt-nix": "treefmt-nix_2"
       }
     },
@@ -555,6 +573,22 @@
       "original": {
         "owner": "tinted-theming",
         "repo": "base16-zed",
+        "type": "github"
+      }
+    },
+    "tmux-agent-indicator": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1786705849,
+        "narHash": "sha256-VCq7Muvpke9goN1RTcIChW+c/SkFHUSJdoEGKH+CaMQ=",
+        "owner": "accessd",
+        "repo": "tmux-agent-indicator",
+        "rev": "553c3cca8bea6fe17e0709ec04f737417de42141",
+        "type": "github"
+      },
+      "original": {
+        "owner": "accessd",
+        "repo": "tmux-agent-indicator",
         "type": "github"
       }
     },

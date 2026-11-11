@@ -3,7 +3,6 @@
   imports = [
     ./eza.nix
     ./git.nix
-    ./nushell.nix
     ./password-store.nix
     ./starship.nix
     ./tmux.nix
