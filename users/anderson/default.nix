@@ -3,6 +3,7 @@
     ../../modules/home.nix
     ./kitty.nix
     ./nushell.nix
+    ./omp.nix
   ];
 
   home = {

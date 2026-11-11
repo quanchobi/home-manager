@@ -6,6 +6,11 @@
   };
 
   inputs = {
+    anthropic-skills = {
+      url = "github:anthropics/skills";
+      flake = false;
+    };
+
     niri.url = "github:sodiboo/niri-flake";
 
     nixvim.url = "github:quanchobi/nixvim";
@@ -46,9 +51,10 @@
       ];
       forAllSystems = nixpkgs.lib.genAttrs systems;
 
-      # Standalone (non-NixOS) home-manager config for users/<dir>.
+      # Standalone (non-NixOS) home-manager config from a user entry point plus
+      # any per-host modules.
       mkHome =
-        dir:
+        modules:
         home-manager.lib.homeManagerConfiguration {
           pkgs = nixpkgs.legacyPackages.x86_64-linux;
           extraSpecialArgs = {
@@ -59,9 +65,9 @@
             {
               nixpkgs.config.allowUnfree = true;
             }
-            ./users/${dir}
             nixvim.homeModules.default
-          ];
+          ]
+          ++ modules;
         };
 
       treefmtEval = forAllSystems (
@@ -89,10 +95,15 @@
         formatting = treefmtEval.${system}.config.build.check self;
       });
 
-      # For non-NixOS systems
+      # For non-NixOS systems. `home-manager switch --flake .` picks
+      # "$USER@$(hostname)" before "$USER".
       homeConfigurations = {
-        anderson = mkHome "anderson";
-        "jacob.hanks@canonical.com" = mkHome "jacob.hanks_canonical.com";
+        anderson = mkHome [ ./users/anderson ];
+        "anderson@yappy-yiqi" = mkHome [
+          ./users/anderson
+          ./users/anderson/desktop.nix
+        ];
+        "jacob.hanks@canonical.com" = mkHome [ ./users/jacob.hanks_canonical.com ];
       };
 
       # NixOS module for home-manager

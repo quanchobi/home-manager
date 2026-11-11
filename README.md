@@ -24,12 +24,16 @@ Files are organized like this:
 ╰─── users
     ╰─── <user>
         ├─── default.nix  # entry point: imports modules/home.nix, sets username
+        ├─── <host>.nix   # optional per-host additions (e.g. anderson/desktop.nix)
         ╰─── <overrides>  # only what differs from modules/
 ```
 
 A user's `default.nix` holds just that user's differences (identity, git, shell
 tweaks, extra modules); everything else comes from `modules/`. Adding a user is
-a new `users/<user>/default.nix` plus one `mkHome "<user>"` line in `flake.nix`.
+a new `users/<user>/default.nix` plus one `mkHome [ ./users/<user> ]` line in
+`flake.nix`. Host-specific config is a `"<user>@<hostname>"` entry that adds
+that host's module; `home-manager switch --flake .` prefers it over `<user>`
+when the hostname matches.
 
 ### ⌨️ CLI
 
