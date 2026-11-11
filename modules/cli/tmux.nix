@@ -5,14 +5,13 @@
   ...
 }:
 let
+  # Fork of accessd/tmux-agent-indicator adding @agent-indicator-state-icons
+  # and the omp extension.
   agentIndicator = pkgs.tmuxPlugins.mkTmuxPlugin {
     pluginName = "agent-indicator";
     rtpFilePath = "agent-indicator.tmux";
     version = "unstable-${inputs.tmux-agent-indicator.shortRev}";
     src = inputs.tmux-agent-indicator;
-    # Adds @agent-indicator-state-icons: per-state icons for hook-reported
-    # states, falling back to the per-agent @agent-indicator-icons.
-    patches = [ ./tmux-agent-indicator-state-icons.patch ];
   };
   agentIndicatorDir = "${agentIndicator}/share/tmux-plugins/agent-indicator";
 
@@ -24,10 +23,6 @@ let
       [ agentIndicatorDir ]
       (builtins.readFile "${inputs.tmux-agent-indicator}/hooks/claude-hooks.json")
   );
-
-  ompExtension = pkgs.replaceVars ./tmux-agent-indicator-omp.ts {
-    agentState = "${agentIndicatorDir}/scripts/agent-state.sh";
-  };
 in
 {
   programs.tmux = {
@@ -65,8 +60,8 @@ in
       # Change splits to | and - as opposed to " and %
         unbind '"'
         unbind %
-        bind | split-window -h
-        bind - split-window -v
+        bind | split-window -h -c "#{pane_current_path}"
+        bind - split-window -v -c "#{pane_current_path}"
       # Theming
       # Colors reference the terminal's palette (default/colourN), not hex, so tmux
       # follows the DankMaterialShell-generated ghostty/kitty theme when it changes.
@@ -104,8 +99,10 @@ in
     '';
   };
 
-  # omp auto-loads extension modules from ~/.omp/agent/extensions.
-  home.file.".omp/agent/extensions/tmux-agent-indicator.ts".source = ompExtension;
+  # omp auto-loads extension modules from ~/.omp/agent/extensions. Linked from
+  # the plugin package, it calls the scripts beside it.
+  home.file.".omp/agent/extensions/tmux-agent-indicator.ts".source =
+    "${agentIndicatorDir}/plugins/omp-tmux-agent-indicator.ts";
 
   # Claude Code rewrites ~/.claude/settings.json itself, so merge the hooks in
   # instead of making it a read-only store symlink. Previous agent-indicator

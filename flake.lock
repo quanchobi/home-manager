@@ -579,15 +579,15 @@
     "tmux-agent-indicator": {
       "flake": false,
       "locked": {
-        "lastModified": 1786705849,
-        "narHash": "sha256-VCq7Muvpke9goN1RTcIChW+c/SkFHUSJdoEGKH+CaMQ=",
-        "owner": "accessd",
+        "lastModified": 1794430735,
+        "narHash": "sha256-E8ihzUSGLXaHJupzPnqQzMo1GCIsW49kRbvomaPH6as=",
+        "owner": "quanchobi",
         "repo": "tmux-agent-indicator",
-        "rev": "553c3cca8bea6fe17e0709ec04f737417de42141",
+        "rev": "21336e1be12b82c5c13b2aab4d009fcf4e272d9d",
         "type": "github"
       },
       "original": {
-        "owner": "accessd",
+        "owner": "quanchobi",
         "repo": "tmux-agent-indicator",
         "type": "github"
       }
