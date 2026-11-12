@@ -21,10 +21,10 @@ if ping_rpc; then
 fi
 
 # Reuse a healthy session; replace a dead one.
-state=$(niri-agent list | python3 -c "
+state=$(niri-agent list | python3 -c '
 import json, sys
-s = [x for x in json.load(sys.stdin) if x['name'] == '$SESSION']
-print('none' if not s else ('ok' if s[0]['alive'] and s[0]['bus_alive'] else 'dead'))")
+s = [x for x in json.load(sys.stdin) if x["name"] == sys.argv[1]]
+print("none" if not s else ("ok" if s[0]["alive"] and s[0]["bus_alive"] else "dead"))' "$SESSION")
 if [ "$state" = dead ]; then niri-agent stop "$SESSION" >/dev/null; fi
 if [ "$state" != ok ]; then niri-agent start "$SESSION" --size 1600x1000 >/dev/null; fi
 

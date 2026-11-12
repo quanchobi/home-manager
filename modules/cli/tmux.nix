@@ -38,7 +38,7 @@ in
       # The plugin expands #{agent_indicator} when it loads, so status-right
       # must be set here: programs.tmux.extraConfig is emitted after plugins.
       extraConfig = ''
-        set -g status-right "#{agent_indicator} #[fg=colour4]%a %Y-%m-%d 󱑒 %H:%M %p "
+        set -g status-right "#{agent_indicator} #[fg=colour4]%a %Y-%m-%d 󱑒 %H:%M "
       '';
       integrations = {
         claude.enable = true;

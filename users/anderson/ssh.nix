@@ -3,13 +3,13 @@
     enable = true;
     enableDefaultConfig = false;
     includes = [ "hosts" ];
-    matchBlocks."*" = {
+    settings."*" = {
       # Reuse one connection per host for 10 minutes after the last session.
-      controlMaster = "auto";
-      controlPath = "~/.ssh/control-%C";
-      controlPersist = "10m";
-      serverAliveInterval = 60;
-      serverAliveCountMax = 3;
+      ControlMaster = "auto";
+      ControlPath = "~/.ssh/control-%C";
+      ControlPersist = "10m";
+      ServerAliveInterval = 60;
+      ServerAliveCountMax = 3;
     };
   };
 }

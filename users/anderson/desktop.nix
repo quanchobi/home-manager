@@ -9,8 +9,27 @@ let
   # From nixpkgs, so the servers don't depend on a hand-installed uv on PATH.
   uvx = lib.getExe' pkgs.uv "uvx";
 
+  # Pinned: unpinned uvx runs whatever PyPI has at each omp start. Bump
+  # freecad-mcp together with the FreeCAD addon (same tag, see SKILL.md).
+  freecadMcp = "freecad-mcp@0.1.30";
+  blenderMcp = "mcp-for-blender@2.2.7";
+
+  # The skill's CLI client runs on a Nix Python with the MCP SDK and starts the
+  # same pinned server as omp's mcp.json.
+  freecadSkill = pkgs.runCommand "freecad-design-skill" { } ''
+    cp -r ${./skills/freecad-design} $out
+    chmod -R u+w $out
+    substituteInPlace $out/scripts/mcp_call.py \
+      --replace-fail @python@ ${lib.getExe' (pkgs.python3.withPackages (ps: [ ps.mcp ])) "python3"} \
+      --replace-fail @uvx@ ${uvx} \
+      --replace-fail @freecadMcp@ ${freecadMcp}
+    substituteInPlace $out/SKILL.md --replace-fail @freecadMcp@ ${freecadMcp}
+    chmod +x $out/scripts/mcp_call.py
+  '';
+
   # omp rewrites mcp.json itself (/mcp add, enable, disable, reauth), so these
-  # servers are merged into it on activation, like config.yml in ./omp.nix.
+  # servers are merged into it on activation, like config.yml in ./omp.nix. The
+  # merge only adds: a server removed here stays in mcp.json until deleted there.
   mcpServers = (pkgs.formats.json { }).generate "omp-mcp.json" {
     "$schema" =
       "https://raw.githubusercontent.com/can1357/oh-my-pi/main/packages/coding-agent/src/config/mcp-schema.json";
@@ -18,13 +37,13 @@ let
       freecad = {
         type = "stdio";
         command = uvx;
-        args = [ "freecad-mcp" ];
+        args = [ freecadMcp ];
         timeout = 660000;
       };
       blender = {
         type = "stdio";
         command = uvx;
-        args = [ "mcp-for-blender" ];
+        args = [ blenderMcp ];
         timeout = 660000;
       };
       comfyui = {
@@ -56,7 +75,7 @@ in
     };
 
     # Drives the FreeCAD MCP server; needs FreeCAD (snap) and niri-agent.
-    ".omp/agent/skills/freecad-design".source = ./skills/freecad-design;
+    ".omp/agent/skills/freecad-design".source = freecadSkill;
   };
 
   home.activation.ompMcpServers = lib.hm.dag.entryAfter [ "writeBoundary" ] ''

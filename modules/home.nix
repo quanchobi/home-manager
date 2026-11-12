@@ -6,10 +6,7 @@
   ...
 }:
 {
-  imports = [
-    #./accounts # disabled until I finish it
-    ./cli
-  ];
+  imports = [ ./cli ];
 
   # Home Manager needs a bit of information about you and the paths it should
   # manage. `home.username` is set by each user.

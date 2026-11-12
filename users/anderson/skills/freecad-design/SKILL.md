@@ -20,8 +20,8 @@ It runs FreeCAD inside a private niri-agent session (see `skill://niri-agent`), 
 If the `mcp__freecad_*` tools are missing from the session (config: `~/.omp/agent/mcp.json`), use the CLI client, which speaks the same MCP protocol:
 
 ```bash
-uv run -q --with mcp python ~/.omp/agent/skills/freecad-design/scripts/mcp_call.py execute_code @build.py
-uv run -q --with mcp python ~/.omp/agent/skills/freecad-design/scripts/mcp_call.py get_view '{"view_name":"Right"}'
+~/.omp/agent/skills/freecad-design/scripts/mcp_call.py execute_code @build.py
+~/.omp/agent/skills/freecad-design/scripts/mcp_call.py get_view '{"view_name":"Right"}'
 ```
 
 Images land in `$MCP_SHOT_DIR` (default cwd) as `shot_<n>.png`; exit code 1 on failure.
@@ -43,7 +43,7 @@ Failures come back as text (`Failed to execute code: ...`, `Headless FreeCAD scr
 - **Snap sees a private `/tmp`.** Files FreeCAD writes to `/tmp` are invisible to the host and vice versa. Use non-hidden paths under `$HOME` (e.g. `~/<project>/`). Hidden dirs (`~/.cache`, `~/.config`) are unreadable to the snap.
 - **Headless needs a symlink:** the server writes scripts to `~/.cache/freecad-mcp/headless`, which is a symlink to `~/snap/freecad/common/mcp-headless`. If headless fails with `PermissionError ... .cache/freecad-mcp/headless`, recreate it: `rm -rf ~/.cache/freecad-mcp/headless && ln -s ~/snap/freecad/common/mcp-headless ~/.cache/freecad-mcp/headless`.
 - **niri-agent needs `--host-bus` for the snap.** On the private bus snapd cannot create its systemd scope and FreeCAD exits instantly (the start script handles this).
-- **Addon/server sync:** addon lives in `~/snap/freecad/common/Mod/FreeCADMCP` (copied from github.com/neka-nat/freecad-mcp `addon/FreeCADMCP`); server is `uvx freecad-mcp` (latest from PyPI). If `version_check` is not `ok`, re-copy the addon from a fresh clone and restart FreeCAD. Addon settings: `~/snap/freecad/common/freecad_mcp_settings.json` (`auto_start_rpc: true`).
+- **Addon/server sync:** addon lives in `~/snap/freecad/common/Mod/FreeCADMCP` (copied from github.com/neka-nat/freecad-mcp `addon/FreeCADMCP`); server is `@freecadMcp@` from PyPI, pinned in the home-manager config (`users/anderson/desktop.nix`). If `version_check` is not `ok`, re-copy the addon from the matching tag (`git clone --branch v<version>`) and restart FreeCAD. Addon settings: `~/snap/freecad/common/freecad_mcp_settings.json` (`auto_start_rpc: true`).
 - `execute_code` scripts share one persistent namespace; re-running a build script should `App.closeDocument(NAME)` first.
 
 ## 4. Design workflow

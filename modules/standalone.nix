@@ -1,6 +1,9 @@
 # Only for standalone home-manager on a non-NixOS distro (imported by mkHome).
 # On NixOS the system owns these concerns.
 {
+  # Unfree fonts; mkHome allows unfree.
+  imports = [ ./fonts.nix ];
+
   # XDG_DATA_DIRS, TERMINFO_DIRS, nix.sh sourcing and distro zsh fpaths, so
   # Nix-installed programs integrate with the host distro.
   targets.genericLinux = {

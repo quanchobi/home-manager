@@ -10,22 +10,18 @@
     sessionPath = [
       "$HOME/.local/bin"
     ];
+    # Debian/Ubuntu packaging identity (dch, debuild), for every program.
+    sessionVariables = {
+      DEBFULLNAME = "Jacob Hanks";
+      DEBEMAIL = "jacob.hanks@canonical.com";
+    };
   };
 
-  programs = {
-    git = {
-      enable = true;
-      settings.user = {
-        name = "quanchobi";
-        email = "quanchobi@proton.me";
-      };
-    };
-
-    zsh = {
-      sessionVariables = {
-        "DEBFULLNAME" = "Jacob Hanks";
-        "DEBEMAIL" = "jacob.hanks@canonical.com";
-      };
+  programs.git = {
+    enable = true;
+    settings.user = {
+      name = "quanchobi";
+      email = "quanchobi@proton.me";
     };
   };
 }

@@ -9,7 +9,8 @@
 let
   # omp rewrites config.yml itself (model selector, /settings), so these keys
   # are merged into it on activation instead of linking a read-only store file.
-  # Keys set here win on every switch; everything else omp writes is kept.
+  # Keys set here win on every switch; everything else omp writes is kept. The
+  # merge only adds: a key removed here stays in config.yml until deleted there.
   settings = (pkgs.formats.yaml { }).generate "omp-config.yml" {
     symbolPreset = "nerd";
     composer.shape = "band";
@@ -26,7 +27,7 @@ let
     ".omp/agent/agents/${name}.md".text = ''
       ---
       name: ${name}
-      description: ${description}
+      description: ${builtins.toJSON description}
       model: ${builtins.toJSON models}
       ---
 

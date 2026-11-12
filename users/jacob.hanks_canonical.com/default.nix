@@ -14,6 +14,11 @@
       "${config.home.homeDirectory}/.bin/bin"
     ];
     packages = [ pkgs.rustup ];
+    # Debian/Ubuntu packaging identity (dch, debuild), for every program.
+    sessionVariables = {
+      DEBFULLNAME = "Jacob Hanks";
+      DEBEMAIL = "jacob.hanks@canonical.com";
+    };
   };
 
   programs = {
@@ -23,12 +28,13 @@
         user.name = "Jacob Hanks";
         user.email = "jacob.hanks@canonical.com";
         gitreview.username = "quanchobi";
-        core.editor = "nvim";
         gitubuntu.lpuser = "quanchobi";
         sendemail = {
           smtpserver = "smtp.gmail.com";
           smtpuser = "jacob.hanks@canonical.com";
           smtpserverport = "587";
+          # STARTTLS on 587; Gmail refuses AUTH over plain SMTP.
+          smtpencryption = "tls";
         };
       };
       signing = {

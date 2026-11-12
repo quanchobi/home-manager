@@ -14,12 +14,17 @@
       flake = false;
     };
 
-    nixvim.url = "github:quanchobi/nixvim";
+    # Keeps its own nixos-unstable nixpkgs (nixvim tracks unstable); only the
+    # formatter input is shared.
+    nixvim = {
+      url = "github:quanchobi/nixvim";
+      inputs.treefmt-nix.follows = "treefmt-nix";
+    };
 
-    nixpkgs.url = "github:nixos/nixpkgs/nixos-25.11";
+    nixpkgs.url = "github:nixos/nixpkgs/nixos-26.05";
 
     home-manager = {
-      url = "github:nix-community/home-manager/release-25.11";
+      url = "github:nix-community/home-manager/release-26.05";
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
@@ -51,6 +56,12 @@
       ];
       forAllSystems = nixpkgs.lib.genAttrs systems;
 
+      # Third-party home-manager modules every config gets, standalone or NixOS.
+      sharedModules = [
+        nixvim.homeModules.default
+        tmux-agent-indicator.homeModules.default
+      ];
+
       # Standalone (non-NixOS) home-manager config for one host architecture,
       # from a user entry point plus any per-host modules.
       mkHome =
@@ -60,12 +71,12 @@
           extraSpecialArgs = { inherit inputs; };
           modules = [
             {
+              # For modules/fonts.nix (symbola, aegyptus).
               nixpkgs.config.allowUnfree = true;
             }
-            nixvim.homeModules.default
-            tmux-agent-indicator.homeModules.default
             ./modules/standalone.nix
           ]
+          ++ sharedModules
           ++ modules;
         };
 
@@ -74,10 +85,12 @@
         treefmt-nix.lib.evalModule nixpkgs.legacyPackages.${system} {
           projectRootFile = "flake.nix";
           programs = {
+            deadnix.enable = true; # Remove unused Nix bindings
             nixfmt.enable = true; # Format Nix files
             prettier.enable = true; # Format JSON, YAML, Markdown
             shellcheck.enable = true; # Lint shell scripts
             shfmt.enable = true; # Format shell scripts
+            statix.enable = true; # Fix Nix antipatterns
           };
           settings.formatter = {
             prettier.excludes = [ "*.lock" ];
@@ -92,6 +105,21 @@
       # Checks for `nix flake check`
       checks = forAllSystems (system: {
         formatting = treefmtEval.${system}.config.build.check self;
+
+        # anderson's generation through nixosModules.default on a minimal NixOS
+        # system that, like a typical consumer, does not allow unfree packages.
+        nixos-module =
+          (nixpkgs.lib.nixosSystem {
+            modules = [
+              self.nixosModules.default
+              {
+                nixpkgs.hostPlatform = system;
+                boot.isContainer = true; # no bootloader or filesystems needed
+                users.users.anderson.isNormalUser = true;
+                system.stateVersion = "26.05";
+              }
+            ];
+          }).config.home-manager.users.anderson.home.activationPackage;
       });
 
       # For non-NixOS systems. `home-manager switch --flake .` picks
@@ -105,19 +133,18 @@
         "jacob.hanks@canonical.com" = mkHome "x86_64-linux" [ ./users/jacob.hanks_canonical.com ];
       };
 
-      # NixOS module for home-manager
+      # NixOS module: brings in home-manager's own NixOS module and the user. A
+      # consumer that also imports home-manager.nixosModules.home-manager must
+      # make this flake's home-manager input follow its own, so both imports are
+      # the same path and get deduplicated.
       nixosModules.default = {
+        imports = [ home-manager.nixosModules.home-manager ];
         home-manager = {
           useGlobalPkgs = true;
           useUserPackages = true;
           extraSpecialArgs = { inherit inputs; };
-          users.anderson = {
-            imports = [
-              ./users/anderson
-              nixvim.homeModules.default
-              tmux-agent-indicator.homeModules.default
-            ];
-          };
+          inherit sharedModules;
+          users.anderson = ./users/anderson;
         };
       };
     };

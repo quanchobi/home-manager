@@ -11,10 +11,10 @@ Files are organized like this:
 ```
 .
 ├─── flake.nix            # mkHome helper, homeConfigurations, nixosModules.default
-├─── modules              # shared by every user
-│   ├─── home.nix         # base: cli, stateVersion
-│   ├─── standalone.nix   # non-NixOS only: genericLinux target, nix gc
-│   ├─── accounts         # WIP, not imported yet
+├─── modules              # shared building blocks
+│   ├─── home.nix         # base for every user: cli, stateVersion
+│   ├─── standalone.nix   # non-NixOS only: genericLinux target, nix gc, fonts
+│   ├─── fonts.nix        # terminal fonts (two unfree); via standalone.nix
 │   ╰─── cli
 │       ├─── default.nix
 │       ╰─── <cli modules>
@@ -38,6 +38,20 @@ CLI modules are enabled for all machines. They configure the core shell
 environment: zsh, starship, tmux/sesh, fzf, carapace, eza, zoxide (as `cd`),
 atuin, direnv and git. One-off utilities that need no configuration are left to
 the host's package manager.
+
+### 🔤 Fonts
+
+`modules/fonts.nix` comes in through `standalone.nix`, so every non-NixOS config
+gets it. Two of its fonts are unfree, which `mkHome` allows; the NixOS module
+leaves fonts to the system.
+
+### ❄️ NixOS
+
+`nixosModules.default` imports home-manager's NixOS module and sets up
+`anderson` with the global `pkgs`; it needs no unfree packages. If the system
+flake imports `home-manager.nixosModules.home-manager` itself, make this flake's
+`home-manager` input follow the system's so the two imports deduplicate.
+`nix flake check` builds it on a minimal NixOS system.
 
 ### 🔑 SSH
 

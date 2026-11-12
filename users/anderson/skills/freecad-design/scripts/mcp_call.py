@@ -1,10 +1,14 @@
+#!@python@
 """Call one freecad-mcp tool over MCP stdio, outside the agent's MCP integration.
 
-Usage (needs the `mcp` package; uv supplies it):
-  uv run -q --with mcp python mcp_call.py list
-  uv run -q --with mcp python mcp_call.py <tool> '<json args>'
-  uv run -q --with mcp python mcp_call.py execute_code @script.py            # file -> {"code": ...}
-  uv run -q --with mcp python mcp_call.py execute_code_headless @script.py
+The interpreter (Python with the MCP SDK) and the pinned server are filled in
+by users/anderson/desktop.nix when the skill is installed.
+
+Usage:
+  mcp_call.py list
+  mcp_call.py <tool> '<json args>'
+  mcp_call.py execute_code @script.py            # file -> {"code": ...}
+  mcp_call.py execute_code_headless @script.py
 
 Images returned by the tool are written to $MCP_SHOT_DIR (default: cwd) as shot_<n>.png.
 """
@@ -24,7 +28,7 @@ async def main() -> int:
     arg = sys.argv[2] if len(sys.argv) > 2 else "{}"
     args = {"code": pathlib.Path(arg[1:]).read_text()} if arg.startswith("@") else json.loads(arg)
     shot_dir = pathlib.Path(os.environ.get("MCP_SHOT_DIR", "."))
-    server = StdioServerParameters(command="uvx", args=["freecad-mcp"])
+    server = StdioServerParameters(command="@uvx@", args=["@freecadMcp@"])
     async with stdio_client(server, errlog=open(os.devnull, "w")) as (r, w), ClientSession(r, w) as s:
         await s.initialize()
         if tool == "list":

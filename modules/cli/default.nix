@@ -1,4 +1,3 @@
-{ pkgs, ... }:
 {
   imports = [
     ./atuin.nix
@@ -12,12 +11,5 @@
     ./zsh.nix
     ./sesh.nix
     ./fzf.nix
-  ];
-
-  home.packages = with pkgs; [
-    # Fonts
-    aegyptus
-    nerd-fonts.intone-mono
-    symbola
   ];
 }

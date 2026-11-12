@@ -14,30 +14,27 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
       - name: Install Nix
-        uses: DeterminateSystems/nix-installer-action@main
+        uses: DeterminateSystems/nix-installer-action@3138316df39ed29be04236d7ffc686fa525866aa # v23
         with:
           extra-conf: allow-import-from-derivation = true
 
       - name: Setup Nix cache
-        uses: DeterminateSystems/magic-nix-cache-action@main
-
-      - name: Check flake formatting with treefmt
-        run: nix fmt -- --fail-on-change
+        uses: DeterminateSystems/magic-nix-cache-action@84c0677f58dcedf3b91f8223ce36a9ea5b3c84b7 # v15
+        with:
+          use-flakehub: false
 
       # Determinate Nix builds checks for every system under --all-systems;
       # the runner is x86_64-only, so evaluate everything and build natively.
       - name: Evaluate flake outputs for all systems
         run: nix flake check --all-systems --no-build
 
+      # treefmt (nixfmt, deadnix, statix, prettier, shellcheck, shfmt) and
+      # nixosModules.default built on a minimal NixOS system.
       - name: Run flake check
         run: nix flake check
-
-      - name: Check module evaluation
-        run: |
-          nix eval .#nixosModules.default --apply 'x: true'
 
   build:
     runs-on: ubuntu-latest
@@ -50,52 +47,18 @@ jobs:
           - jacob.hanks@canonical.com
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
       - name: Install Nix
-        uses: DeterminateSystems/nix-installer-action@main
+        uses: DeterminateSystems/nix-installer-action@3138316df39ed29be04236d7ffc686fa525866aa # v23
         with:
           extra-conf: allow-import-from-derivation = true
 
       - name: Setup Nix cache
-        uses: DeterminateSystems/magic-nix-cache-action@main
+        uses: DeterminateSystems/magic-nix-cache-action@84c0677f58dcedf3b91f8223ce36a9ea5b3c84b7 # v15
+        with:
+          use-flakehub: false
 
       - name: Build ${{ matrix.config }}
         run: |
           nix build '.#homeConfigurations."${{ matrix.config }}".activationPackage' --no-link
-
-  deadnix-check:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      - name: Install Nix
-        uses: DeterminateSystems/nix-installer-action@main
-        with:
-          extra-conf: allow-import-from-derivation = true
-
-      - name: Setup Nix cache
-        uses: DeterminateSystems/magic-nix-cache-action@main
-
-      - name: Check for dead code with deadnix
-        run: |
-          nix run nixpkgs#deadnix -- --fail .
-
-  statix-check:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      - name: Install Nix
-        uses: DeterminateSystems/nix-installer-action@main
-        with:
-          extra-conf: allow-import-from-derivation = true
-
-      - name: Setup Nix cache
-        uses: DeterminateSystems/magic-nix-cache-action@main
-
-      - name: Run statix linter
-        run: |
-          nix run nixpkgs#statix -- check .
