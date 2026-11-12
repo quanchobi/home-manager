@@ -1,7 +1,6 @@
 {
   imports = [
     ../../modules/home.nix
-    ./kitty.nix
     ./omp.nix
   ];
 

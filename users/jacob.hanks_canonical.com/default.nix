@@ -6,9 +6,6 @@
 {
   imports = [
     ../../modules/home.nix
-    ./opencode.nix
-    #./hypr.nix
-    ./firefox.nix
   ];
 
   home = {
