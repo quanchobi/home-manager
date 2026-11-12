@@ -6,10 +6,8 @@
   ...
 }:
 {
-  imports = [
-    #./kitty.nix
-  ]
-  ++ lib.optionals isNixOS [
+  # Disabled (not NixOS-specific): ./kitty.nix
+  imports = lib.optionals isNixOS [
     #./gnome.nix
     #./style.nix
   ];

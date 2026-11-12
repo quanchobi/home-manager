@@ -33,8 +33,13 @@ jobs:
       - name: Check flake formatting with treefmt
         run: nix fmt -- --fail-on-change
 
+      # Determinate Nix builds checks for every system under --all-systems;
+      # the runner is x86_64-only, so evaluate everything and build natively.
+      - name: Evaluate flake outputs for all systems
+        run: nix flake check --all-systems --no-build
+
       - name: Run flake check
-        run: nix flake check --all-systems
+        run: nix flake check
 
       - name: Check module evaluation
         run: |
