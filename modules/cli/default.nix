@@ -1,6 +1,7 @@
 { pkgs, ... }:
 {
   imports = [
+    ./carapace.nix
     ./eza.nix
     ./git.nix
     ./password-store.nix
