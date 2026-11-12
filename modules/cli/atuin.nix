@@ -1,15 +1,12 @@
 { config, lib, ... }:
 {
-  # Shell history in SQLite, with Ctrl-R search and the up arrow. Each shell
-  # (so each tmux pane) gets its own ATUIN_SESSION.
+  # Shell history in SQLite, searched with Ctrl-R. The up arrow keeps zsh's
+  # own history walk.
   programs.atuin = {
     enable = true;
     enableZshIntegration = true;
-    settings = {
-      # Up arrow walks this pane's history; Ctrl-R searches everything.
-      filter_mode_shell_up_key_binding = "session";
-      update_check = false;
-    };
+    flags = [ "--disable-up-arrow" ];
+    settings.update_check = false;
   };
 
   # `atuin init zsh` prepends its own strategy to ZSH_AUTOSUGGEST_STRATEGY;
