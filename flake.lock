@@ -217,13 +217,17 @@
       }
     },
     "tmux-agent-indicator": {
-      "flake": false,
+      "inputs": {
+        "nixpkgs": [
+          "nixpkgs"
+        ]
+      },
       "locked": {
-        "lastModified": 1794430735,
-        "narHash": "sha256-E8ihzUSGLXaHJupzPnqQzMo1GCIsW49kRbvomaPH6as=",
+        "lastModified": 1794469913,
+        "narHash": "sha256-7GWvngd/ZnSisWhl9Y2YmGVgz1Cl77wol8K/H32TVKc=",
         "owner": "quanchobi",
         "repo": "tmux-agent-indicator",
-        "rev": "21336e1be12b82c5c13b2aab4d009fcf4e272d9d",
+        "rev": "e66f9f122347cb26715a225610ff0baa06a42283",
         "type": "github"
       },
       "original": {

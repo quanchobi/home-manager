@@ -25,7 +25,7 @@
 
     tmux-agent-indicator = {
       url = "github:quanchobi/tmux-agent-indicator";
-      flake = false;
+      inputs.nixpkgs.follows = "nixpkgs";
     };
 
     treefmt-nix = {
@@ -40,6 +40,7 @@
       nixpkgs,
       nixvim,
       self,
+      tmux-agent-indicator,
       treefmt-nix,
       ...
     }@inputs:
@@ -62,6 +63,7 @@
               nixpkgs.config.allowUnfree = true;
             }
             nixvim.homeModules.default
+            tmux-agent-indicator.homeModules.default
             ./modules/standalone.nix
           ]
           ++ modules;
@@ -113,6 +115,7 @@
             imports = [
               ./users/anderson
               nixvim.homeModules.default
+              tmux-agent-indicator.homeModules.default
             ];
           };
         };
