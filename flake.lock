@@ -355,14 +355,15 @@
       "inputs": {
         "nixpkgs": "nixpkgs_3",
         "nixvim": "nixvim_2",
+        "omp-nvim": "omp-nvim",
         "treefmt-nix": "treefmt-nix"
       },
       "locked": {
-        "lastModified": 1794458713,
-        "narHash": "sha256-SiiM43//o9+MLxqJwjfMkFV03HVWgCvvCusdg0TVOWA=",
+        "lastModified": 1794462883,
+        "narHash": "sha256-rFuDkYUyQoCydPlNOwlgO+0MvzQfDTuL76ijzOcJqHw=",
         "owner": "quanchobi",
         "repo": "nixvim",
-        "rev": "1d300e9874997116c5a2281e544c47625b2c0de4",
+        "rev": "1b87e60cb5802137cf6f8ea1f189dec80cda284f",
         "type": "github"
       },
       "original": {
@@ -416,6 +417,27 @@
       "original": {
         "owner": "nix-community",
         "repo": "NUR",
+        "type": "github"
+      }
+    },
+    "omp-nvim": {
+      "inputs": {
+        "nixpkgs": [
+          "nixvim",
+          "nixpkgs"
+        ]
+      },
+      "locked": {
+        "lastModified": 1794462760,
+        "narHash": "sha256-4Ctuzp1Q7YwPHjBCeyc/aNcDSZkEKYVPgT9TqhMoDyo=",
+        "owner": "quanchobi",
+        "repo": "omp.nvim",
+        "rev": "8c701327f3b9abbae4321ba6b319b2849ee720be",
+        "type": "github"
+      },
+      "original": {
+        "owner": "quanchobi",
+        "repo": "omp.nvim",
         "type": "github"
       }
     },
