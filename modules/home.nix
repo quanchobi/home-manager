@@ -1,15 +1,12 @@
 # Shared base for every user. Per-user entry points live in users/<name>/ and
 # only carry what differs from this.
 {
-  inputs,
   config,
   lib,
   ...
 }:
 {
   imports = [
-    inputs.stylix.homeModules.stylix
-    ./options.nix
     #./accounts # disabled until I finish it
     ./cli
   ];

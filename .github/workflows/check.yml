@@ -5,9 +5,8 @@ on:
     branches: [main, master]
   push:
     branches: [main, master]
-  schedule:
-    # Run at 01:00 UTC on the 1st of every month (after flake update)
-    - cron: "0 1 1 * *"
+  # Also dispatched by update-flake.yml on the update-flake-lock branch, since
+  # PRs opened with GITHUB_TOKEN don't trigger pull_request runs.
   workflow_dispatch:
 
 jobs:
@@ -16,16 +15,11 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
-        with:
-          # Check out the update branch if it exists
-          ref: ${{ github.event.schedule && 'update-flake-lock' || github.ref }}
 
       - name: Install Nix
         uses: DeterminateSystems/nix-installer-action@main
         with:
-          extra-conf: |
-            accept-flake-config = true
-            allow-import-from-derivation = true
+          extra-conf: allow-import-from-derivation = true
 
       - name: Setup Nix cache
         uses: DeterminateSystems/magic-nix-cache-action@main
@@ -45,26 +39,41 @@ jobs:
         run: |
           nix eval .#nixosModules.default --apply 'x: true'
 
-      - name: Build home configuration
-        env:
-          NIXPKGS_ALLOW_UNFREE: 1
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        config:
+          - anderson
+          - anderson@yappy-yiqi
+          - jacob.hanks@canonical.com
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install Nix
+        uses: DeterminateSystems/nix-installer-action@main
+        with:
+          extra-conf: allow-import-from-derivation = true
+
+      - name: Setup Nix cache
+        uses: DeterminateSystems/magic-nix-cache-action@main
+
+      - name: Build ${{ matrix.config }}
         run: |
-          nix build .#homeConfigurations.anderson.activationPackage --no-link --impure
+          nix build '.#homeConfigurations."${{ matrix.config }}".activationPackage' --no-link
 
   deadnix-check:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
-        with:
-          ref: ${{ github.event.schedule && 'update-flake-lock' || github.ref }}
 
       - name: Install Nix
         uses: DeterminateSystems/nix-installer-action@main
         with:
-          extra-conf: |
-            accept-flake-config = true
-            allow-import-from-derivation = true
+          extra-conf: allow-import-from-derivation = true
 
       - name: Setup Nix cache
         uses: DeterminateSystems/magic-nix-cache-action@main
@@ -78,15 +87,11 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
-        with:
-          ref: ${{ github.event.schedule && 'update-flake-lock' || github.ref }}
 
       - name: Install Nix
         uses: DeterminateSystems/nix-installer-action@main
         with:
-          extra-conf: |
-            accept-flake-config = true
-            allow-import-from-derivation = true
+          extra-conf: allow-import-from-derivation = true
 
       - name: Setup Nix cache
         uses: DeterminateSystems/magic-nix-cache-action@main

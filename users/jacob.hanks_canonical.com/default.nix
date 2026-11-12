@@ -18,12 +18,12 @@
 
   programs = {
     git = {
-      enable = false;
+      enable = true;
       settings = {
         user.name = "Jacob Hanks";
         user.email = "jacob.hanks@canonical.com";
         gitreview.username = "quanchobi";
-        core.defaultEditor = "nvim";
+        core.editor = "nvim";
         gitubuntu.lpuser = "quanchobi";
         sendemail = {
           smtpserver = "smtp.gmail.com";
@@ -43,6 +43,10 @@
         autoload -Uz bashcompinit && bashcompinit
       '';
       history.expireDuplicatesFirst = true;
+      # By default zsh-vi-mode sets its keymaps on the first prompt, wiping the
+      # Ctrl-R / up-arrow / Tab bindings from atuin, fzf and fzf-tab. Sourcing
+      # mode applies them when the plugin loads, before those integrations.
+      localVariables.ZVM_INIT_MODE = "sourcing";
       plugins = [
         {
           name = "vi-mode";
@@ -50,15 +54,6 @@
           file = "share/zsh-vi-mode/zsh-vi-mode.plugin.zsh";
         }
       ];
-    };
-
-    kitty = {
-      enableGitIntegration = true;
-      actionAliases = {
-        "launch_tab" = "launch --cwd=current --type=tab";
-        "launch_window" = "launch --cwd=current --type=os-window";
-      };
-      settings.shell = "zsh --login";
     };
   };
 }

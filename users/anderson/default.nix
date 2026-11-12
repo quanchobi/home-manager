@@ -2,6 +2,7 @@
   imports = [
     ../../modules/home.nix
     ./omp.nix
+    ./ssh.nix
   ];
 
   home = {
@@ -21,9 +22,6 @@
     };
 
     zsh = {
-      initExtra = ''
-        export PATH="$PATH:$HOME/.local/bin"
-      '';
       sessionVariables = {
         "DEBFULLNAME" = "Jacob Hanks";
         "DEBEMAIL" = "jacob.hanks@canonical.com";

@@ -6,6 +6,9 @@
   ...
 }:
 let
+  # From nixpkgs, so the servers don't depend on a hand-installed uv on PATH.
+  uvx = lib.getExe' pkgs.uv "uvx";
+
   # omp rewrites mcp.json itself (/mcp add, enable, disable, reauth), so these
   # servers are merged into it on activation, like config.yml in ./omp.nix.
   mcpServers = (pkgs.formats.json { }).generate "omp-mcp.json" {
@@ -14,13 +17,13 @@ let
     mcpServers = {
       freecad = {
         type = "stdio";
-        command = "uvx";
+        command = uvx;
         args = [ "freecad-mcp" ];
         timeout = 660000;
       };
       blender = {
         type = "stdio";
-        command = "uvx";
+        command = uvx;
         args = [ "mcp-for-blender" ];
         timeout = 660000;
       };

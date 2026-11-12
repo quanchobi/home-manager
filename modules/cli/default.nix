@@ -1,23 +1,20 @@
 { pkgs, ... }:
 {
   imports = [
+    ./atuin.nix
     ./carapace.nix
+    ./direnv.nix
     ./eza.nix
     ./git.nix
-    ./password-store.nix
     ./starship.nix
     ./tmux.nix
+    ./zoxide.nix
     ./zsh.nix
     ./sesh.nix
     ./fzf.nix
   ];
 
   home.packages = with pkgs; [
-    # Utilities
-    btop
-    netcat-gnu
-    unzip
-
     # Fonts
     aegyptus
     nerd-fonts.intone-mono

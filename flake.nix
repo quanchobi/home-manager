@@ -1,17 +1,18 @@
 {
   description = "Home Manager configuration";
 
-  nixConfig = {
-    allow-unfree = true;
-  };
-
   inputs = {
     anthropic-skills = {
       url = "github:anthropics/skills";
       flake = false;
     };
 
-    niri.url = "github:sodiboo/niri-flake";
+    # Tracks master instead of nixpkgs' zsh-fzf-tab, which lags behind; bumped
+    # by `nix flake update` like every other input.
+    fzf-tab = {
+      url = "github:Aloxaf/fzf-tab";
+      flake = false;
+    };
 
     nixvim.url = "github:quanchobi/nixvim";
 
@@ -21,8 +22,6 @@
       url = "github:nix-community/home-manager/release-25.11";
       inputs.nixpkgs.follows = "nixpkgs";
     };
-
-    stylix.url = "github:danth/stylix/release-25.11";
 
     tmux-agent-indicator = {
       url = "github:quanchobi/tmux-agent-indicator";
@@ -51,21 +50,19 @@
       ];
       forAllSystems = nixpkgs.lib.genAttrs systems;
 
-      # Standalone (non-NixOS) home-manager config from a user entry point plus
-      # any per-host modules.
+      # Standalone (non-NixOS) home-manager config for one host architecture,
+      # from a user entry point plus any per-host modules.
       mkHome =
-        modules:
+        system: modules:
         home-manager.lib.homeManagerConfiguration {
-          pkgs = nixpkgs.legacyPackages.x86_64-linux;
-          extraSpecialArgs = {
-            inherit inputs;
-            isNixOS = false;
-          };
+          pkgs = nixpkgs.legacyPackages.${system};
+          extraSpecialArgs = { inherit inputs; };
           modules = [
             {
               nixpkgs.config.allowUnfree = true;
             }
             nixvim.homeModules.default
+            ./modules/standalone.nix
           ]
           ++ modules;
         };
@@ -98,38 +95,27 @@
       # For non-NixOS systems. `home-manager switch --flake .` picks
       # "$USER@$(hostname)" before "$USER".
       homeConfigurations = {
-        anderson = mkHome [ ./users/anderson ];
-        "anderson@yappy-yiqi" = mkHome [
+        anderson = mkHome "x86_64-linux" [ ./users/anderson ];
+        "anderson@yappy-yiqi" = mkHome "x86_64-linux" [
           ./users/anderson
           ./users/anderson/desktop.nix
         ];
-        "jacob.hanks@canonical.com" = mkHome [ ./users/jacob.hanks_canonical.com ];
+        "jacob.hanks@canonical.com" = mkHome "x86_64-linux" [ ./users/jacob.hanks_canonical.com ];
       };
 
       # NixOS module for home-manager
-      nixosModules.default =
-        {
-          ...
-        }:
-        {
-          imports = [ ./modules/options.nix ];
-
-          config = {
-            home-manager = {
-              useGlobalPkgs = true;
-              useUserPackages = true;
-              extraSpecialArgs = {
-                inherit inputs;
-                isNixOS = true;
-              };
-              users.anderson = {
-                imports = [
-                  ./users/anderson
-                  nixvim.homeModules.default
-                ];
-              };
-            };
+      nixosModules.default = {
+        home-manager = {
+          useGlobalPkgs = true;
+          useUserPackages = true;
+          extraSpecialArgs = { inherit inputs; };
+          users.anderson = {
+            imports = [
+              ./users/anderson
+              nixvim.homeModules.default
+            ];
           };
         };
+      };
     };
 }

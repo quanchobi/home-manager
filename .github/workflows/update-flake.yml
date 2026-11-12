@@ -7,6 +7,7 @@ on:
   workflow_dispatch: # Allow manual triggering
 
 permissions:
+  actions: write
   contents: write
   pull-requests: write
 
@@ -21,6 +22,7 @@ jobs:
         uses: DeterminateSystems/nix-installer-action@main
 
       - name: Update flake.lock
+        id: update
         uses: DeterminateSystems/update-flake-lock@main
         with:
           pr-title: "chore: update flake.lock"
@@ -28,9 +30,16 @@ jobs:
             Automated flake lock update
 
             This PR updates all flake inputs to their latest versions.
-
-            The validation workflow will run at 01:00 UTC to verify all checks pass.
           pr-labels: |
             dependencies
             automated
           branch: update-flake-lock
+
+      # A PR opened with GITHUB_TOKEN doesn't trigger pull_request workflows,
+      # but a dispatched run does, and its checks attach to the branch head,
+      # so they show up on the PR.
+      - name: Run checks on the update branch
+        if: steps.update.outputs.pull-request-number != ''
+        run: gh workflow run check.yml --ref update-flake-lock
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}

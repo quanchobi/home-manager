@@ -1,4 +1,5 @@
 {
+  config,
   pkgs,
   lib,
   inputs,
@@ -33,7 +34,13 @@ in
     keyMode = "vi";
     customPaneNavigationAndResize = true;
     prefix = "C-Space";
-    terminal = "xterm-256color";
+    # Home Manager's zsh, not the distro's /bin/zsh.
+    shell = lib.getExe config.programs.zsh.package;
+    # tmux's default 500ms wait to tell Esc from Alt-<key> delays Esc in nvim.
+    escapeTime = 10;
+    focusEvents = true;
+    historyLimit = 50000;
+    terminal = "tmux-256color";
     plugins = [
       {
         plugin = agentIndicator;
@@ -54,8 +61,8 @@ in
       }
     ];
     extraConfig = ''
-      # exec zsh at the start
-        set -g default-shell /bin/zsh
+      # Pass truecolor through to the outer terminal
+        set -as terminal-features ",*:RGB"
         set -g renumber-windows on
       # Change splits to | and - as opposed to " and %
         unbind '"'
