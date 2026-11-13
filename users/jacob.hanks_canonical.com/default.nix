@@ -16,7 +16,7 @@
     packages = [ pkgs.rustup ];
     # Debian/Ubuntu packaging identity (dch, debuild), for every program.
     sessionVariables = {
-      DEBFULLNAME = "Jacob Hanks";
+      DEBFULLNAME = "Jacob A Hanks";
       DEBEMAIL = "jacob.hanks@canonical.com";
     };
   };
@@ -25,7 +25,7 @@
     git = {
       enable = true;
       settings = {
-        user.name = "Jacob Hanks";
+        user.name = "Jacob A Hanks";
         user.email = "jacob.hanks@canonical.com";
         gitreview.username = "quanchobi";
         gitubuntu.lpuser = "quanchobi";

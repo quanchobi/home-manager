@@ -12,7 +12,7 @@
     ];
     # Debian/Ubuntu packaging identity (dch, debuild), for every program.
     sessionVariables = {
-      DEBFULLNAME = "Jacob Hanks";
+      DEBFULLNAME = "Jacob A Hanks";
       DEBEMAIL = "jacob.hanks@canonical.com";
     };
   };
