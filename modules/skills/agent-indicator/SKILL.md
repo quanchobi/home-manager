@@ -30,12 +30,12 @@ The hooks do nothing when `TMUX` is unset. This applies to any child agent you s
 
 ## States
 
-| State | Meaning |
-|---|---|
-| `running` | A turn is in progress. |
-| `needs-input` | Blocked on an approval or question dialog. |
-| `done` | The last turn finished and the user hasn't looked at that pane yet. |
-| `idle` | Nothing recorded: the agent hasn't run a turn since starting, or it finished and the user has since focused its pane or window (focusing clears `done`). |
+| State         | Meaning                                                                                                                                                  |
+| ------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `running`     | A turn is in progress.                                                                                                                                   |
+| `needs-input` | Blocked on an approval or question dialog.                                                                                                               |
+| `done`        | The last turn finished and the user hasn't looked at that pane yet.                                                                                      |
+| `idle`        | Nothing recorded: the agent hasn't run a turn since starting, or it finished and the user has since focused its pane or window (focusing clears `done`). |
 
 States come only from agents whose hooks are installed (omp, Claude Code, Codex). Other agents in `@agent-indicator-processes` (aider, cursor, opencode) are listed but always `idle`. `prompt --wait` reports them as stalled, so use the `tmux` skill's prompt polling for those.
 

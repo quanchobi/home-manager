@@ -26,7 +26,7 @@ home-manager switch --flake .
 
 | Configuration               | Adds                                                                 |
 | --------------------------- | -------------------------------------------------------------------- |
-| `anderson`                  | Personal git identity, SSH defaults                                  |
+| `anderson`                  | Personal git identity, SSH defaults, REA (reverse engineering)       |
 | `anderson@yappy-yiqi`       | The above, plus desktop omp extras (local models, MCP, CAD)          |
 | `jacob.hanks@canonical.com` | Work git identity with signing and `send-email`, rustup, zsh vi-mode |
 
@@ -63,7 +63,7 @@ modules/
   home.nix              base for every user: cli, omp, skills, stateVersion
   standalone.nix        non-NixOS only: genericLinux, nix gc, fonts
   fonts.nix             nerd font + symbol/ancient-script fallbacks
-  omp.nix               omp settings and model-pinned dev subagents
+  omp.nix               omp settings, model-pinned dev subagents, omp.mcpServers
   cli/                  one file per program
   skills/               omp skills shared by every user
 users/<user>/
@@ -85,8 +85,11 @@ configuration come from the host's package manager instead.
 pinned to one model. `modules/skills` links in `frontend-design`
 ([anthropics/skills]), `lxd` ([canonical/openstack-agentic-skills]), and the
 local `tmux` and `agent-indicator` skills, plus the `tmux-agent` script the
-latter documents. On the desktop, `users/anderson/desktop.nix` adds a llama.cpp
-provider at `127.0.0.1:8080`, FreeCAD/Blender/ComfyUI MCP servers, and the
+latter documents. `users/anderson/rea` adds [REA]: the `rea` CLI, its MCP
+server, the `reverse-engineer-anything` skill, and the engines and tools REA
+drives (Ghidra, Kuna, JADX, Frida, firmware/capture/Android tooling). On the
+desktop, `users/anderson/desktop.nix` adds a llama.cpp provider at
+`127.0.0.1:8080`, FreeCAD/Blender/ComfyUI MCP servers, and the
 `freecad-design` skill.
 
 **SSH.** `users/anderson/ssh.nix` sets connection multiplexing and keepalives
@@ -100,9 +103,23 @@ config includes, so hostnames stay out of this public repo.
   existing files. Managed keys win on every switch; anything omp writes
   survives. The merge only adds: removing a key here does not remove it from
   the file, so delete it there by hand.
-- **MCP servers are pinned.** `freecad-mcp` and `mcp-for-blender` run through
-  `uvx` at fixed versions in `desktop.nix`. Bump `freecad-mcp` together with the
-  FreeCAD addon (same tag).
+- **MCP servers are pinned.** Users declare them in `omp.mcpServers`.
+  `freecad-mcp` and `mcp-for-blender` run through `uvx` at fixed versions in
+  `desktop.nix`. Bump `freecad-mcp` together with the FreeCAD addon (same tag).
+- **REA is one npm tarball.** `rea/package.nix` unpacks `rea-agents` at a fixed
+  version and hash; the CLI, MCP server and skill all come from it. It runs on
+  Nix's Node with no `npx`. Frida's Node bindings, the one dependency the
+  tarball leaves out, are added at the versions in its `npm-shrinkwrap.json`,
+  so a bump updates both.
+- **REA's tools are handed to it, not installed globally.** REA installs no
+  engine itself and reads their paths from its environment, so
+  `rea/default.nix` sets them on the `rea` wrapper and the MCP registration
+  only; nothing is added to `PATH`. Ghidra, Kuna and Unblob come from
+  `nixpkgs-unstable`, because 26.05 lacks or predates what REA accepts. REA
+  also checks exact versions, so WABT, sigrok-cli and pwntools' pyelftools and
+  unicorn are overridden to the releases it names: a REA bump may move those.
+  Ghidra is the default native engine; pick Kuna per target. IDA, Hopper and
+  JEB are unfree and not configured. This adds about 3 GiB to the profile.
 - **`stateVersion` is `24.05`.** Don't change it without reading the Home
   Manager release notes.
 
@@ -122,7 +139,7 @@ config includes, so hostnames stay out of this public repo.
 ```sh
 nix fmt                # nixfmt, deadnix, statix, prettier, shellcheck, shfmt
 nix flake check        # formatting + nixosModules.default on a minimal NixOS system
-nix flake update       # bump all inputs, including the non-flake skill repos
+nix flake update       # bump all inputs, including the non-flake skill repos (not REA)
 ```
 
 CI (`.github/workflows/check.yml`) runs `nix flake check` and builds every
@@ -134,3 +151,4 @@ CI (`.github/workflows/check.yml`) runs `nix flake check` and builds every
 [quanchobi/nixvim]: https://github.com/quanchobi/nixvim
 [anthropics/skills]: https://github.com/anthropics/skills
 [canonical/openstack-agentic-skills]: https://github.com/canonical/openstack-agentic-skills
+[REA]: https://github.com/morluto/rea

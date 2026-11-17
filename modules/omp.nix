@@ -1,7 +1,8 @@
 # oh-my-pi (omp) config for every user. There is no home-manager module, so
-# files are placed under ~/.omp/agent directly. Skills are in ./skills; desktop
-# MCP servers, local models and 3D-design skills in users/anderson/desktop.nix.
+# files are placed under ~/.omp/agent directly. Skills are in ./skills; users
+# add MCP servers through `omp.mcpServers` (see users/anderson).
 {
+  config,
   pkgs,
   lib,
   ...
@@ -20,6 +21,15 @@ let
     claudeResets.autoRedeem = "yes";
     codexResets.autoRedeem = "yes";
     dev.autoqaConsent = "granted";
+  };
+
+  # omp rewrites mcp.json itself too (/mcp add, enable, disable, reauth), so
+  # `omp.mcpServers` is merged the same way: a server removed from the Nix
+  # config stays in mcp.json until deleted there.
+  mcpServers = (pkgs.formats.json { }).generate "omp-mcp.json" {
+    "$schema" =
+      "https://raw.githubusercontent.com/can1357/oh-my-pi/main/packages/coding-agent/src/config/mcp-schema.json";
+    inherit (config.omp) mcpServers;
   };
 
   # Task subagents that pin the same implementation brief to one model each.
@@ -42,41 +52,64 @@ let
   };
 in
 {
-  home.file = lib.mkMerge [
-    (devAgent "argon-dev"
-      "General-purpose implementation agent pinned to Gemini 4 Argon (via OpenRouter)."
-      [
-        "openrouter/google/gemini-4-argon"
-      ]
-    )
-    (devAgent "astra-dev"
-      "General-purpose implementation agent pinned to GPT-6 Astra (via the openai-codex login)."
-      [
-        "openai-codex/gpt-6-astra"
-      ]
-    )
-    (devAgent "haiku-dev" "General-purpose implementation agent pinned to Claude Haiku 5.5." [
-      "anthropic/claude-haiku-5-5"
-      "openrouter/anthropic/claude-haiku-5.5"
-    ])
-    (devAgent "opus-dev" "General-purpose implementation agent pinned to Claude Opus 5.5." [
-      "anthropic/claude-opus-5-5"
-      "openrouter/anthropic/claude-opus-5.5"
-    ])
-    (devAgent "sonnet-dev" "General-purpose implementation agent pinned to Claude Sonnet 5.5." [
-      "anthropic/claude-sonnet-5-5"
-      "openrouter/anthropic/claude-sonnet-5.5"
-    ])
-  ];
+  options.omp.mcpServers = lib.mkOption {
+    type = lib.types.attrsOf (pkgs.formats.json { }).type;
+    default = { };
+    description = "MCP servers merged into ~/.omp/agent/mcp.json on activation, by name.";
+  };
 
-  home.activation.ompConfig = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
-    config="$HOME/.omp/agent/config.yml"
-    run mkdir -p "$(dirname "$config")"
-    tmp=$(mktemp)
-    if { [ -s "$config" ] && cat "$config" || echo '{}'; } \
-      | ${lib.getExe pkgs.yq-go} eval-all '. as $f ireduce ({}; . * $f)' - ${settings} > "$tmp"; then
-      run cp "$tmp" "$config"
-    fi
-    rm -f "$tmp"
-  '';
+  config = {
+    home.file = lib.mkMerge [
+      (devAgent "argon-dev"
+        "General-purpose implementation agent pinned to Gemini 4 Argon (via OpenRouter)."
+        [
+          "openrouter/google/gemini-4-argon"
+        ]
+      )
+      (devAgent "astra-dev"
+        "General-purpose implementation agent pinned to GPT-6 Astra (via the openai-codex login)."
+        [
+          "openai-codex/gpt-6-astra"
+        ]
+      )
+      (devAgent "haiku-dev" "General-purpose implementation agent pinned to Claude Haiku 5.5." [
+        "anthropic/claude-haiku-5-5"
+        "openrouter/anthropic/claude-haiku-5.5"
+      ])
+      (devAgent "opus-dev" "General-purpose implementation agent pinned to Claude Opus 5.5." [
+        "anthropic/claude-opus-5-5"
+        "openrouter/anthropic/claude-opus-5.5"
+      ])
+      (devAgent "sonnet-dev" "General-purpose implementation agent pinned to Claude Sonnet 5.5." [
+        "anthropic/claude-sonnet-5-5"
+        "openrouter/anthropic/claude-sonnet-5.5"
+      ])
+    ];
+
+    home.activation = {
+      ompConfig = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
+        config="$HOME/.omp/agent/config.yml"
+        run mkdir -p "$(dirname "$config")"
+        tmp=$(mktemp)
+        if { [ -s "$config" ] && cat "$config" || echo '{}'; } \
+          | ${lib.getExe pkgs.yq-go} eval-all '. as $f ireduce ({}; . * $f)' - ${settings} > "$tmp"; then
+          run cp "$tmp" "$config"
+        fi
+        rm -f "$tmp"
+      '';
+
+      ompMcpServers = lib.mkIf (config.omp.mcpServers != { }) (
+        lib.hm.dag.entryAfter [ "writeBoundary" ] ''
+          mcp="$HOME/.omp/agent/mcp.json"
+          run mkdir -p "$(dirname "$mcp")"
+          tmp=$(mktemp)
+          if { [ -s "$mcp" ] && cat "$mcp" || echo '{}'; } \
+            | ${lib.getExe pkgs.jq} --slurpfile nix ${mcpServers} '. * $nix[0]' > "$tmp"; then
+            run cp "$tmp" "$mcp"
+          fi
+          rm -f "$tmp"
+        ''
+      );
+    };
+  };
 }

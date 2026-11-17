@@ -23,6 +23,9 @@
 
     nixpkgs.url = "github:nixos/nixpkgs/nixos-26.05";
 
+    # Only for packages nixos-26.05 lacks or has too old (users/anderson/rea).
+    nixpkgs-unstable.url = "github:nixos/nixpkgs/nixos-unstable";
+
     home-manager = {
       url = "github:nix-community/home-manager/release-26.05";
       inputs.nixpkgs.follows = "nixpkgs";
