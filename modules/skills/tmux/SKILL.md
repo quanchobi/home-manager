@@ -27,7 +27,7 @@ Not for: one-off commands or background jobs only you consume — use your own b
 ## Rules
 
 1. **Never send input to `$TMUX_PANE`.** That types into your own input.
-2. **Address panes by ID** (`%N`), read from creation output or listings. Never derive targets from window/pane indices or examples; indices shift when windows close (`renumber-windows` is on).
+2. **Address panes by ID** (`%N`), read from creation output or listings. Never derive targets from window/pane indices or examples; indices shift when windows close (if `renumber-windows` is on).
 3. **Don't steal focus.** Always `-d` on `new-window`/`split-window`/`new-session`. Only `select-window`/`select-pane`/`switch-client` when the user asks.
 4. **Ownership.** Tag panes you create with `@agent_owner`. Without explicit user instruction: never type into, `C-c`, or close a pane, window, or session you didn't create, and never `kill-server`.
 5. **Look before typing.** Check `pane_current_command` and `pane_in_mode` first (see below).
@@ -70,7 +70,7 @@ P=$(tmux new-session -d -s NAME -c "$PWD" -P -F '#{pane_id}')             # sess
 
 ## Run a command and wait for it
 
-The pane runs the user's interactive shell (zsh). Wait until it shows a prompt (`pane_current_command` is the shell), then type the command followed by a sentinel. The sentinel records the exit status on the pane and signals a unique `wait-for` channel:
+The pane runs the user's interactive shell. Wait until it shows a prompt (`pane_current_command` is the shell), then type the command followed by a sentinel. The sentinel records the exit status on the pane and signals a unique `wait-for` channel:
 
 ```bash
 CH=agent-$RANDOM
@@ -81,10 +81,10 @@ timeout 600 tmux wait-for "$CH"; echo "wait=$?"   # 0 = finished, 124 = still ru
 tmux show -pqv -t "$P" @agent_rc                  # exit status (empty if not finished)
 ```
 
-- `-t $P` in the sentinel is required: a bare `tmux set -p` inside the pane targets the session's *active* pane, not the one running the command.
+- `-t $P` in the sentinel is required: a bare `tmux set -p` inside the pane targets the session's _active_ pane, not the one running the command.
 - Use a fresh channel per run. `wait-for -S` latches if nobody is waiting yet, so there is no race, but a stale unconsumed signal on a reused name would release the next wait immediately.
 - Keep `timeout` below your bash tool's own deadline. On 124 the command is still running; read output and decide whether to wait again, interrupt, or report.
-- The command must be a single line. The leading space keeps it out of zsh history (`histignorespace` is on).
+- The command must be a single line. The leading space keeps it out of history (if `histignorespace` is on).
 - The sentinel is visible in the pane. That's expected; don't hide it.
 
 For a process you didn't start (e.g. the user's build), poll instead: it's done when `pane_current_command` is back to the shell.
@@ -105,13 +105,13 @@ The capture also contains the command line you typed and everything earlier in t
 
 ## Read output
 
-| Want | Command |
-|---|---|
-| Current screen | `tmux capture-pane -p -t "$P"` |
+| Want                                                 | Command                                             |
+| ---------------------------------------------------- | --------------------------------------------------- |
+| Current screen                                       | `tmux capture-pane -p -t "$P"`                      |
 | Recent output, soft wraps joined (logs, transcripts) | `tmux capture-pane -p -J -t "$P" -S -120 \| cat -s` |
-| Recent output as rendered (wraps kept) | `tmux capture-pane -p -t "$P" -S -120 \| cat -s` |
-| Colors/styling as evidence | add `-e` |
-| Full scrollback (huge; filter it) | `-S -` |
+| Recent output as rendered (wraps kept)               | `tmux capture-pane -p -t "$P" -S -120 \| cat -s`    |
+| Colors/styling as evidence                           | add `-e`                                            |
+| Full scrollback (huge; filter it)                    | `-S -`                                              |
 
 `-S -N` starts N lines above the visible screen; `cat -s` squeezes the blank padding below the last output. Full-screen programs on the alternate screen (vim, less, htop) have no scrollback, only their visible screen.
 
