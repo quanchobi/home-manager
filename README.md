@@ -1,80 +1,136 @@
-# My Home Manager Configuration
+# home-manager
 
-## 🏡 Overview
+My [Home Manager](https://github.com/nix-community/home-manager) flake: a zsh/tmux
+shell environment and an [oh-my-pi](https://github.com/can1357/oh-my-pi) (omp)
+agent setup, shared across standalone non-NixOS machines and NixOS.
 
-This is my home-manager configuration. There are many like it, but this one is mine. This _is now_ spun into its own flake such that I can use it on other non NixOS machines.
+Tracks `nixos-26.05` / `release-26.05`. Linux only (`x86_64`, `aarch64`).
 
-## 📁 Organization
+## Usage
 
-Files are organized like this:
+### Standalone (non-NixOS)
 
-```
-.
-├─── flake.nix            # mkHome helper, homeConfigurations, nixosModules.default
-├─── modules              # shared building blocks
-│   ├─── home.nix         # base for every user: cli, omp, skills, stateVersion
-│   ├─── standalone.nix   # non-NixOS only: genericLinux target, nix gc, fonts
-│   ├─── fonts.nix        # terminal fonts (two unfree); via standalone.nix
-│   ├─── omp.nix          # oh-my-pi settings and dev subagents
-│   ├─── cli
-│   │   ├─── default.nix
-│   │   ╰─── <cli modules>
-│   ╰─── skills           # omp skills for every user (default.nix + local skills)
-╰─── users
-    ╰─── <user>
-        ├─── default.nix  # entry point: imports modules/home.nix, sets username
-        ├─── <host>.nix   # optional per-host additions (e.g. anderson/desktop.nix)
-        ╰─── <overrides>  # only what differs from modules/
+Requires Nix with flakes enabled. First run, before `home-manager` is installed:
+
+```sh
+nix run home-manager/release-26.05 -- switch --flake github:quanchobi/home-manager
 ```
 
-A user's `default.nix` holds just that user's differences (identity, git, shell
-tweaks, extra modules); everything else comes from `modules/`. Adding a user is
-a new `users/<user>/default.nix` plus one `mkHome "<system>" [ ./users/<user> ]`
-line in `flake.nix`. Host-specific config is a `"<user>@<hostname>"` entry that
-adds that host's module; `home-manager switch --flake .` prefers it over
-`<user>` when the hostname matches.
+After that, from a checkout:
 
-### ⌨️ CLI
+```sh
+home-manager switch --flake .
+```
 
-CLI modules are enabled for all machines. They configure the core shell
-environment: zsh, starship, tmux/sesh, fzf, carapace, eza, zoxide (as `cd`),
-atuin, direnv and git. One-off utilities that need no configuration are left to
-the host's package manager.
+`home-manager` picks `$USER@$(hostname)` if it exists, otherwise `$USER`.
 
-### 🤖 omp
+| Configuration               | Adds                                                                 |
+| --------------------------- | -------------------------------------------------------------------- |
+| `anderson`                  | Personal git identity, SSH defaults                                  |
+| `anderson@yappy-yiqi`       | The above, plus desktop omp extras (local models, MCP, CAD)          |
+| `jacob.hanks@canonical.com` | Work git identity with signing and `send-email`, rustup, zsh vi-mode |
 
-Every user gets the same oh-my-pi setup. `modules/omp.nix` merges settings into
-`~/.omp/agent/config.yml` and adds the model-pinned dev subagents.
-`modules/skills` adds the software-engineering skills: frontend-design
-(`anthropics/skills`), lxd (`canonical/openstack-agentic-skills`), and the local
-tmux and agent-indicator skills plus the `tmux-agent` script the latter
-documents. Upstream skills are non-flake inputs, bumped with
-`nix flake update`. `users/anderson/desktop.nix` adds what only the desktop
-has: the local llama.cpp models, the FreeCAD/Blender/ComfyUI MCP servers and
-the freecad-design skill.
+Every standalone configuration also gets `modules/standalone.nix`:
+`targets.genericLinux`, a weekly `nix.gc` that drops generations older than 30
+days, and terminal fonts (two of them unfree, which `mkHome` allows).
 
-### 🔤 Fonts
+### NixOS
 
-`modules/fonts.nix` comes in through `standalone.nix`, so every non-NixOS config
-gets it. Two of its fonts are unfree, which `mkHome` allows; the NixOS module
-leaves fonts to the system.
+`nixosModules.default` imports home-manager's NixOS module and configures
+`anderson` with the system's `pkgs`. The system must define
+`users.users.anderson`. Fonts are left to the system, so no unfree packages are
+needed.
 
-### ❄️ NixOS
+```nix
+{
+  inputs.home = {
+    url = "github:quanchobi/home-manager";
+    # Only if the system flake also imports home-manager.nixosModules.home-manager:
+    # following the same input lets the two imports deduplicate.
+    inputs.home-manager.follows = "home-manager";
+  };
 
-`nixosModules.default` imports home-manager's NixOS module and sets up
-`anderson` with the global `pkgs`; it needs no unfree packages. If the system
-flake imports `home-manager.nixosModules.home-manager` itself, make this flake's
-`home-manager` input follow the system's so the two imports deduplicate.
-`nix flake check` builds it on a minimal NixOS system.
+  # in nixosSystem modules:
+  #   inputs.home.nixosModules.default
+}
+```
 
-### 🔑 SSH
+## Layout
 
-`users/anderson/ssh.nix` manages SSH defaults only. Host blocks live in an
-untracked `~/.ssh/hosts`, which the generated `~/.ssh/config` includes, so
-hostnames and addresses stay out of this public repo.
+```
+flake.nix               mkHome, homeConfigurations, nixosModules.default, checks
+modules/
+  home.nix              base for every user: cli, omp, skills, stateVersion
+  standalone.nix        non-NixOS only: genericLinux, nix gc, fonts
+  fonts.nix             nerd font + symbol/ancient-script fallbacks
+  omp.nix               omp settings and model-pinned dev subagents
+  cli/                  one file per program
+  skills/               omp skills shared by every user
+users/<user>/
+  default.nix           entry point: imports modules/home.nix, sets identity
+  <host>.nix            optional per-host additions
+```
 
-## 📝 Notes
+A user directory holds only what differs from `modules/`.
 
-**_HERE BE DRAGONS!_**
+## What's in it
 
-Use at your own peril.
+**Shell.** zsh (autosuggestions, syntax highlighting, [fzf-tab] from master),
+starship, tmux with [tmux-agent-indicator] and sesh, fzf, carapace completions
+rendered through fzf-tab, eza, zoxide as `cd`, atuin, direnv with nix-direnv,
+git, and Neovim from [quanchobi/nixvim]. One-off tools that need no
+configuration come from the host's package manager instead.
+
+**omp.** `modules/omp.nix` sets omp preferences and adds `*-dev` subagents, each
+pinned to one model. `modules/skills` links in `frontend-design`
+([anthropics/skills]), `lxd` ([canonical/openstack-agentic-skills]), and the
+local `tmux` and `agent-indicator` skills, plus the `tmux-agent` script the
+latter documents. On the desktop, `users/anderson/desktop.nix` adds a llama.cpp
+provider at `127.0.0.1:8080`, FreeCAD/Blender/ComfyUI MCP servers, and the
+`freecad-design` skill.
+
+**SSH.** `users/anderson/ssh.nix` sets connection multiplexing and keepalives
+only. Host blocks go in an untracked `~/.ssh/hosts`, which the generated
+config includes, so hostnames stay out of this public repo.
+
+## Behavior worth knowing
+
+- **omp config is merged, not linked.** omp rewrites `~/.omp/agent/config.yml`
+  and `mcp.json` itself, so activation deep-merges the Nix-managed keys into the
+  existing files. Managed keys win on every switch; anything omp writes
+  survives. The merge only adds: removing a key here does not remove it from
+  the file, so delete it there by hand.
+- **MCP servers are pinned.** `freecad-mcp` and `mcp-for-blender` run through
+  `uvx` at fixed versions in `desktop.nix`. Bump `freecad-mcp` together with the
+  FreeCAD addon (same tag).
+- **`stateVersion` is `24.05`.** Don't change it without reading the Home
+  Manager release notes.
+
+## Adding things
+
+- **User:** create `users/<user>/default.nix` importing `../../modules/home.nix`
+  and setting `home.username`, then add
+  `"<user>" = mkHome "<system>" [ ./users/<user> ];` to `homeConfigurations`
+  and the name to the build matrix in `.github/workflows/check.yml`.
+- **Host:** add `users/<user>/<host>.nix` and a `"<user>@<hostname>"` entry
+  that lists it after `./users/<user>`.
+- **CLI program:** add `modules/cli/<program>.nix` and import it from
+  `modules/cli/default.nix`.
+
+## Maintenance
+
+```sh
+nix fmt                # nixfmt, deadnix, statix, prettier, shellcheck, shfmt
+nix flake check        # formatting + nixosModules.default on a minimal NixOS system
+nix flake update       # bump all inputs, including the non-flake skill repos
+```
+
+CI (`.github/workflows/check.yml`) runs `nix flake check` and builds every
+`homeConfigurations` entry on each push and PR. `update-flake.yml` opens a
+`flake.lock` update PR on the 1st of each month and dispatches the checks on it.
+
+[fzf-tab]: https://github.com/Aloxaf/fzf-tab
+[tmux-agent-indicator]: https://github.com/quanchobi/tmux-agent-indicator
+[quanchobi/nixvim]: https://github.com/quanchobi/nixvim
+[anthropics/skills]: https://github.com/anthropics/skills
+[canonical/openstack-agentic-skills]: https://github.com/canonical/openstack-agentic-skills
