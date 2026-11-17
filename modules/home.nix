@@ -6,7 +6,11 @@
   ...
 }:
 {
-  imports = [ ./cli ];
+  imports = [
+    ./cli
+    ./omp.nix
+    ./skills
+  ];
 
   # Home Manager needs a bit of information about you and the paths it should
   # manage. `home.username` is set by each user.

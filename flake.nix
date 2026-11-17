@@ -28,6 +28,11 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
+    openstack-agentic-skills = {
+      url = "github:canonical/openstack-agentic-skills";
+      flake = false;
+    };
+
     tmux-agent-indicator = {
       url = "github:quanchobi/tmux-agent-indicator";
       inputs.nixpkgs.follows = "nixpkgs";

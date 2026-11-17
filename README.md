@@ -12,12 +12,14 @@ Files are organized like this:
 .
 ├─── flake.nix            # mkHome helper, homeConfigurations, nixosModules.default
 ├─── modules              # shared building blocks
-│   ├─── home.nix         # base for every user: cli, stateVersion
+│   ├─── home.nix         # base for every user: cli, omp, skills, stateVersion
 │   ├─── standalone.nix   # non-NixOS only: genericLinux target, nix gc, fonts
 │   ├─── fonts.nix        # terminal fonts (two unfree); via standalone.nix
-│   ╰─── cli
-│       ├─── default.nix
-│       ╰─── <cli modules>
+│   ├─── omp.nix          # oh-my-pi settings and dev subagents
+│   ├─── cli
+│   │   ├─── default.nix
+│   │   ╰─── <cli modules>
+│   ╰─── skills           # omp skills for every user (default.nix + local skills)
 ╰─── users
     ╰─── <user>
         ├─── default.nix  # entry point: imports modules/home.nix, sets username
@@ -38,6 +40,18 @@ CLI modules are enabled for all machines. They configure the core shell
 environment: zsh, starship, tmux/sesh, fzf, carapace, eza, zoxide (as `cd`),
 atuin, direnv and git. One-off utilities that need no configuration are left to
 the host's package manager.
+
+### 🤖 omp
+
+Every user gets the same oh-my-pi setup. `modules/omp.nix` merges settings into
+`~/.omp/agent/config.yml` and adds the model-pinned dev subagents.
+`modules/skills` adds the software-engineering skills: frontend-design
+(`anthropics/skills`), lxd (`canonical/openstack-agentic-skills`), and the local
+tmux and agent-indicator skills plus the `tmux-agent` script the latter
+documents. Upstream skills are non-flake inputs, bumped with
+`nix flake update`. `users/anderson/desktop.nix` adds what only the desktop
+has: the local llama.cpp models, the FreeCAD/Blender/ComfyUI MCP servers and
+the freecad-design skill.
 
 ### 🔤 Fonts
 

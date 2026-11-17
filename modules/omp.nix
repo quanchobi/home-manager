@@ -1,10 +1,9 @@
-# oh-my-pi (omp) config. There is no home-manager module, so files are placed
-# under ~/.omp/agent directly. Host-specific bits live in ./desktop.nix.
+# oh-my-pi (omp) config for every user. There is no home-manager module, so
+# files are placed under ~/.omp/agent directly. Skills are in ./skills; desktop
+# MCP servers, local models and 3D-design skills in users/anderson/desktop.nix.
 {
-  config,
   pkgs,
   lib,
-  inputs,
   ...
 }:
 let
@@ -41,23 +40,8 @@ let
       actually run with results, and anything integrators must know.
     '';
   };
-
-  # Drives agents in tmux panes from tmux-agent-indicator state; the
-  # agent-indicator skill documents it.
-  tmuxAgent = pkgs.writeShellApplication {
-    name = "tmux-agent";
-    runtimeInputs = [
-      config.programs.tmux.package
-      pkgs.coreutils
-      pkgs.gawk
-      pkgs.gnugrep
-    ];
-    text = builtins.readFile ./skills/agent-indicator/scripts/tmux-agent;
-  };
 in
 {
-  home.packages = [ tmuxAgent ];
-
   home.file = lib.mkMerge [
     (devAgent "argon-dev"
       "General-purpose implementation agent pinned to Gemini 4 Argon (via OpenRouter)."
@@ -83,12 +67,6 @@ in
       "anthropic/claude-sonnet-5-5"
       "openrouter/anthropic/claude-sonnet-5.5"
     ])
-    {
-      ".omp/agent/skills/frontend-design".source = "${inputs.anthropic-skills}/skills/frontend-design";
-      # Pane control, and agents in panes via tmux-agent-indicator state.
-      ".omp/agent/skills/tmux".source = ./skills/tmux;
-      ".omp/agent/skills/agent-indicator".source = ./skills/agent-indicator;
-    }
   ];
 
   home.activation.ompConfig = lib.hm.dag.entryAfter [ "writeBoundary" ] ''

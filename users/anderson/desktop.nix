@@ -28,8 +28,9 @@ let
   '';
 
   # omp rewrites mcp.json itself (/mcp add, enable, disable, reauth), so these
-  # servers are merged into it on activation, like config.yml in ./omp.nix. The
-  # merge only adds: a server removed here stays in mcp.json until deleted there.
+  # servers are merged into it on activation, like config.yml in
+  # modules/omp.nix. The merge only adds: a server removed here stays in
+  # mcp.json until deleted there.
   mcpServers = (pkgs.formats.json { }).generate "omp-mcp.json" {
     "$schema" =
       "https://raw.githubusercontent.com/can1357/oh-my-pi/main/packages/coding-agent/src/config/mcp-schema.json";

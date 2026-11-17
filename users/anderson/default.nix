@@ -1,7 +1,6 @@
 {
   imports = [
     ../../modules/home.nix
-    ./omp.nix
     ./ssh.nix
   ];
 
