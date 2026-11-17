@@ -1,6 +1,7 @@
 # oh-my-pi (omp) config. There is no home-manager module, so files are placed
 # under ~/.omp/agent directly. Host-specific bits live in ./desktop.nix.
 {
+  config,
   pkgs,
   lib,
   inputs,
@@ -40,8 +41,23 @@ let
       actually run with results, and anything integrators must know.
     '';
   };
+
+  # Drives agents in tmux panes from tmux-agent-indicator state; the
+  # agent-indicator skill documents it.
+  tmuxAgent = pkgs.writeShellApplication {
+    name = "tmux-agent";
+    runtimeInputs = [
+      config.programs.tmux.package
+      pkgs.coreutils
+      pkgs.gawk
+      pkgs.gnugrep
+    ];
+    text = builtins.readFile ./skills/agent-indicator/scripts/tmux-agent;
+  };
 in
 {
+  home.packages = [ tmuxAgent ];
+
   home.file = lib.mkMerge [
     (devAgent "argon-dev"
       "General-purpose implementation agent pinned to Gemini 4 Argon (via OpenRouter)."
@@ -69,6 +85,9 @@ in
     ])
     {
       ".omp/agent/skills/frontend-design".source = "${inputs.anthropic-skills}/skills/frontend-design";
+      # Pane control, and agents in panes via tmux-agent-indicator state.
+      ".omp/agent/skills/tmux".source = ./skills/tmux;
+      ".omp/agent/skills/agent-indicator".source = ./skills/agent-indicator;
     }
   ];
 

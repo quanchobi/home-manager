@@ -1,0 +1,409 @@
+#!/usr/bin/env bash
+# tmux-agent: drive coding agents running in tmux panes, using the state that
+# tmux-agent-indicator records in the tmux global environment
+# (TMUX_AGENT_PANE_<pane_id>_STATE = running | needs-input | done).
+set -euo pipefail
+
+usage() {
+    cat <<'EOF'
+usage: tmux-agent <command> [args]
+
+  list                              agent panes: pane, name, agent, state, location, cwd (* = caller)
+  get <target>                      key=value details for one pane
+  name <pane> <name|->              label a pane; name matches [a-z][a-z0-9_-]{0,31}, unique; - clears
+  start <name> --kind <cmd> --pane <pane> [--timeout S] [-- agent-args...]
+                                    launch an agent in an idle shell pane and wait until it is ready
+  prompt <target> <text|-> [--wait] [--timeout S]
+                                    submit a prompt (bracketed paste, then Enter); - reads stdin
+  wait <target> [--until running|needs-input|done] [--changed] [--timeout S]
+                                    wait until settled (done, idle, or needs-input) or a specific state;
+                                    --changed first waits for the current state to change (use after keys)
+  read <target> [--lines N] [--visible] [--ansi]
+                                    last N output lines (default 120, soft wraps joined) or the visible screen
+  keys <target> <key>...            send tmux key names: Enter Escape C-c Up y ...
+
+target: a pane id (%N) or an agent name set with `name`/`start`.
+timeouts default to 600 s.
+exit status: 0 ok, 1 error, 2 usage, 3 needs-input (agent blocked on approval/question),
+             4 stalled (no agent activity within 5 s of a prompt), 124 timeout
+EOF
+}
+
+die() {
+    printf 'tmux-agent: %s\n' "$1" >&2
+    exit "${2:-1}"
+}
+
+usage_error() {
+    printf 'tmux-agent: %s\n\n' "$1" >&2
+    usage >&2
+    exit 2
+}
+
+require_tmux() {
+    [ -n "${TMUX:-}" ] || die "not running inside tmux (TMUX is unset); refusing to control a tmux server from outside"
+    tmux show-environment -g TMUX_AGENT_INDICATOR_DIR >/dev/null 2>&1 ||
+        die "tmux-agent-indicator is not loaded in this tmux server; agent state is unavailable"
+}
+
+agent_processes() {
+    local list
+    list=$(tmux show-option -gqv @agent-indicator-processes)
+    printf '%s\n' "${list:-claude,codex,aider,cursor,opencode}"
+}
+
+is_agent_cmd() {
+    case ",$(agent_processes)," in
+        *",$1,"*) return 0 ;;
+    esac
+    return 1
+}
+
+is_shell_cmd() {
+    case "$1" in
+        bash | zsh | fish | sh | dash | ksh | mksh | tcsh | nu) return 0 ;;
+    esac
+    return 1
+}
+
+env_value() {
+    local line
+    line=$(tmux show-environment -g "$1" 2>/dev/null) || return 0
+    case "$line" in
+        -*) return 0 ;; # marked as removed
+    esac
+    printf '%s\n' "${line#*=}"
+}
+
+state_of() { env_value "TMUX_AGENT_PANE_${1}_STATE"; }
+
+clear_state() { tmux set-environment -gu "TMUX_AGENT_PANE_${1}_STATE" 2>/dev/null || true; }
+
+field() { tmux display-message -p -t "$1" "$2"; }
+
+valid_name() { [[ "$1" =~ ^[a-z][a-z0-9_-]{0,31}$ ]]; }
+
+# Resolve a pane id or agent name to a live pane id.
+resolve() {
+    local target="$1" matches count
+    if [[ "$target" == %* ]]; then
+        tmux display-message -p -t "$target" '#{pane_id}' 2>/dev/null || die "no such pane: $target"
+        return
+    fi
+    valid_name "$target" || die "invalid target '$target' (expected %N or an agent name)"
+    matches=$(tmux list-panes -a -F '#{pane_id} #{@agent_name}' | awk -v n="$target" '$2 == n { print $1 }')
+    count=$(printf '%s' "$matches" | grep -c . || true)
+    [ "$count" -eq 1 ] || {
+        [ "$count" -eq 0 ] && die "no pane named '$target'"
+        die "name '$target' is on several panes: $(printf '%s' "$matches" | tr '\n' ' ')"
+    }
+    printf '%s\n' "$matches"
+}
+
+not_self() {
+    [ "$1" != "${TMUX_PANE:-}" ] || die "refusing to send input to the calling pane ($1)"
+}
+
+# An agent counts as present when the foreground process is a known agent, or
+# the agent's hooks have reported a state for the pane.
+agent_present() {
+    is_agent_cmd "$(field "$1" '#{pane_current_command}')" || [ -n "$(state_of "$1")" ]
+}
+
+require_agent() {
+    agent_present "$1" || die "no agent in the foreground of $1 (foreground: $(field "$1" '#{pane_current_command}'))"
+}
+
+require_not_in_mode() {
+    [ "$(field "$1" '#{pane_in_mode}')" = 0 ] ||
+        die "$1 is in copy mode (someone may be scrolling it); leave it with: tmux send-keys -t $1 -X cancel"
+}
+
+parse_timeout() {
+    [[ "$1" =~ ^[0-9]+$ ]] || usage_error "--timeout takes whole seconds"
+    printf '%s\n' "$1"
+}
+
+# --- commands ---------------------------------------------------------------
+
+cmd_list() {
+    local pane name cmd location cwd agent state mark
+    printf '%-2s%-6s %-16s %-8s %-12s %-14s %s\n' '' PANE NAME AGENT STATE LOCATION CWD
+    while IFS=$'\t' read -r pane name cmd location cwd; do
+        agent=$(env_value "TMUX_AGENT_PANE_${pane}_AGENT")
+        state=$(state_of "$pane")
+        if [ -z "$agent" ]; then
+            is_agent_cmd "$cmd" || continue
+            agent=$cmd
+        fi
+        mark=' '
+        [ "$pane" = "${TMUX_PANE:-}" ] && mark='*'
+        printf '%-2s%-6s %-16s %-8s %-12s %-14s %s\n' "$mark" "$pane" "$name" "$agent" "${state:-idle}" "$location" "$cwd"
+    # Empty fields would collapse under IFS=tab, so an unnamed pane prints "-".
+    done < <(tmux list-panes -a -F $'#{pane_id}\t#{?#{@agent_name},#{@agent_name},-}\t#{pane_current_command}\t#{session_name}:#{window_index}.#{pane_index}\t#{pane_current_path}')
+}
+
+cmd_get() {
+    [ "$#" -eq 1 ] || usage_error "get takes one target"
+    local pane
+    pane=$(resolve "$1")
+    tmux display-message -p -t "$pane" \
+        $'pane=#{pane_id}\nname=#{@agent_name}\ncmd=#{pane_current_command}\nlocation=#{session_name}:#{window_index}.#{pane_index}\nwindow=#{window_name}\ncwd=#{pane_current_path}\nsize=#{pane_width}x#{pane_height}\nin_mode=#{pane_in_mode}\nowner=#{@agent_owner}'
+    printf 'agent=%s\n' "$(env_value "TMUX_AGENT_PANE_${pane}_AGENT")"
+    printf 'state=%s\n' "$(state_of "$pane")"
+    printf 'self=%s\n' "$([ "$pane" = "${TMUX_PANE:-}" ] && echo 1 || echo 0)"
+}
+
+set_name() {
+    local pane="$1" name="$2" holders holder
+    if [ "$name" = - ]; then
+        tmux set-option -pqu -t "$pane" @agent_name
+        return
+    fi
+    valid_name "$name" || die "invalid name '$name' (must match [a-z][a-z0-9_-]{0,31})"
+    # A name belongs to the agent in the pane: once that agent is gone, the name is free again.
+    holders=$(tmux list-panes -a -F '#{pane_id} #{@agent_name}' | awk -v n="$name" -v p="$pane" '$2 == n && $1 != p { print $1 }')
+    for holder in $holders; do
+        agent_present "$holder" && die "name '$name' is already used by the agent in $holder"
+        tmux set-option -pqu -t "$holder" @agent_name
+    done
+    tmux set-option -p -t "$pane" @agent_name "$name"
+}
+
+cmd_name() {
+    [ "$#" -eq 2 ] || usage_error "name takes <pane> <name|->"
+    [[ "$1" == %* ]] || usage_error "name takes a pane id (%N)"
+    local pane
+    pane=$(resolve "$1")
+    set_name "$pane" "$2"
+}
+
+cmd_start() {
+    local name="" kind="" target="" timeout=30 pane cmd proc line prev="" cur state deadline
+    local -a agent_args=()
+    [ "$#" -ge 1 ] || usage_error "start needs a name"
+    name=$1
+    shift
+    while [ "$#" -gt 0 ]; do
+        case "$1" in
+            --kind) kind=${2:-}; shift 2 || usage_error "--kind needs a value" ;;
+            --pane) target=${2:-}; shift 2 || usage_error "--pane needs a value" ;;
+            --timeout) timeout=$(parse_timeout "${2:-}"); shift 2 ;;
+            --) shift; agent_args=("$@"); break ;;
+            *) usage_error "unknown start option: $1" ;;
+        esac
+    done
+    [ -n "$kind" ] || usage_error "start needs --kind <agent command>"
+    [[ "$target" == %* ]] || usage_error "start needs --pane %N (create the pane first)"
+    pane=$(resolve "$target")
+    not_self "$pane"
+    require_not_in_mode "$pane"
+    cmd=$(field "$pane" '#{pane_current_command}')
+    is_shell_cmd "$cmd" || die "$pane is not at a shell prompt (foreground: $cmd)"
+    set_name "$pane" "$name"
+
+    proc=$(basename "$kind")
+    printf -v line ' %q' "$kind" "${agent_args[@]}"
+    tmux send-keys -t "$pane" -l -- "$line"
+    tmux send-keys -t "$pane" Enter
+
+    # Ready once the agent owns the foreground and its screen has stopped changing.
+    deadline=$((SECONDS + timeout))
+    while :; do
+        sleep 1
+        state=$(state_of "$pane")
+        if [ "$state" = needs-input ]; then
+            printf 'pane=%s name=%s state=needs-input\n' "$pane" "$name"
+            die "agent is blocked during startup; inspect it with: tmux-agent read $name" 3
+        fi
+        cmd=$(field "$pane" '#{pane_current_command}')
+        if [ "$cmd" = "$proc" ]; then
+            cur=$(tmux capture-pane -p -t "$pane")
+            if [ -n "$prev" ] && [ "$cur" = "$prev" ]; then
+                printf 'pane=%s name=%s agent=%s state=ready\n' "$pane" "$name" "$proc"
+                return 0
+            fi
+            prev=$cur
+        elif is_shell_cmd "$cmd" && [ "$SECONDS" -ge $((deadline - timeout + 5)) ]; then
+            set_name "$pane" -
+            die "agent exited or never started in $pane; inspect with: tmux-agent read $pane"
+        fi
+        [ "$SECONDS" -lt "$deadline" ] || die "agent not ready after ${timeout}s (foreground: $cmd)" 124
+    done
+}
+
+# Wait for a state and print state=<s>. Default (empty until): settled, i.e.
+# done, idle, or needs-input (exit 3).
+# tmux-agent-indicator unsets a pane's state when the user focuses a finished
+# agent, so an unset state after activity was observed means the turn ended
+# and was already viewed: reported as state=done seen=1.
+wait_state() {
+    local pane="$1" until="$2" timeout="$3" seen="$4" state cmd deadline
+    deadline=$((SECONDS + timeout))
+    while :; do
+        state=$(state_of "$pane")
+        if [ -n "$state" ]; then
+            seen=1
+        elif [ "$seen" = 1 ]; then
+            cmd=$(field "$pane" '#{pane_current_command}')
+            is_agent_cmd "$cmd" || die "agent exited (foreground: $cmd); inspect with: tmux-agent read $pane"
+            state=done-seen
+        else
+            state=idle
+        fi
+        case "${until:-settled}:$state" in
+            settled:done | done:done) printf 'state=done\n'; return 0 ;;
+            settled:done-seen | done:done-seen) printf 'state=done seen=1\n'; return 0 ;;
+            settled:idle) printf 'state=idle\n'; return 0 ;;
+            settled:needs-input) printf 'state=needs-input\n'; return 3 ;;
+            needs-input:needs-input | running:running) printf 'state=%s\n' "$state"; return 0 ;;
+        esac
+        if [ "$SECONDS" -ge "$deadline" ]; then
+            printf 'state=%s\n' "$state"
+            die "timed out after ${timeout}s" 124
+        fi
+        sleep 1
+    done
+}
+
+cmd_prompt() {
+    local target="" text="" have_text=0 do_wait=0 timeout=600 pane state buffer i
+    while [ "$#" -gt 0 ]; do
+        case "$1" in
+            --wait) do_wait=1; shift ;;
+            --timeout) timeout=$(parse_timeout "${2:-}"); shift 2 ;;
+            *)
+                if [ -z "$target" ]; then target=$1
+                elif [ "$have_text" = 0 ]; then text=$1; have_text=1
+                else usage_error "prompt takes one text argument (quote it, or pass - for stdin)"
+                fi
+                shift
+                ;;
+        esac
+    done
+    [ -n "$target" ] && [ "$have_text" = 1 ] || usage_error "prompt needs <target> <text|->"
+    [ "$text" = - ] && text=$(cat)
+    [ -n "$text" ] || usage_error "empty prompt"
+
+    pane=$(resolve "$target")
+    not_self "$pane"
+    require_agent "$pane"
+    require_not_in_mode "$pane"
+    state=$(state_of "$pane")
+    if [ "$state" = needs-input ]; then
+        printf 'state=needs-input\n'
+        die "agent is blocked on an approval or question; nothing was sent. Inspect with: tmux-agent read $target" 3
+    fi
+    # A finished turn leaves "done" behind; clear it so any later state proves new activity.
+    [ "$state" = running ] || clear_state "$pane"
+
+    buffer="tmux-agent-$$"
+    printf '%s' "$text" | tmux load-buffer -b "$buffer" -
+    tmux paste-buffer -p -d -b "$buffer" -t "$pane"
+    sleep 0.2
+    tmux send-keys -t "$pane" Enter
+    [ "$do_wait" = 1 ] || { printf 'submitted=%s\n' "$pane"; return 0; }
+
+    for ((i = 0; i < 20; i++)); do
+        state=$(state_of "$pane")
+        [ -n "$state" ] && break
+        sleep 0.25
+    done
+    if [ -z "$state" ]; then
+        printf 'state=idle\n'
+        die "no agent activity within 5s; the prompt may still have been delivered, so inspect with 'tmux-agent read $target' before resending" 4
+    fi
+    wait_state "$pane" "" "$timeout" 1
+}
+
+cmd_wait() {
+    local target="" until="" timeout=600 changed=0 pane initial deadline
+    while [ "$#" -gt 0 ]; do
+        case "$1" in
+            --until)
+                until=${2:-}
+                case "$until" in running | needs-input | done) ;; *) usage_error "--until takes running, needs-input or done" ;; esac
+                shift 2
+                ;;
+            --changed) changed=1; shift ;;
+            --timeout) timeout=$(parse_timeout "${2:-}"); shift 2 ;;
+            *) [ -z "$target" ] || usage_error "wait takes one target"; target=$1; shift ;;
+        esac
+    done
+    [ -n "$target" ] || usage_error "wait needs a target"
+    pane=$(resolve "$target")
+    require_agent "$pane"
+    [ "$changed" = 1 ] || { wait_state "$pane" "$until" "$timeout" 0; return; }
+
+    # The state from before (e.g. needs-input right after answering a dialog)
+    # still shows until the agent's hooks catch up; wait for it to move first.
+    initial=$(state_of "$pane")
+    deadline=$((SECONDS + timeout))
+    while [ "$(state_of "$pane")" = "$initial" ]; do
+        if [ "$SECONDS" -ge "$deadline" ]; then
+            printf 'state=%s\n' "${initial:-idle}"
+            die "state stayed ${initial:-idle} for ${timeout}s" 124
+        fi
+        sleep 0.25
+    done
+    wait_state "$pane" "$until" "$((deadline - SECONDS))" 1
+}
+
+cmd_read() {
+    local target="" lines=120 visible=0 ansi=0 pane
+    local -a args=(-p -J)
+    while [ "$#" -gt 0 ]; do
+        case "$1" in
+            --lines) [[ "${2:-}" =~ ^[0-9]+$ ]] || usage_error "--lines takes a number"; lines=$2; shift 2 ;;
+            --visible) visible=1; shift ;;
+            --ansi) ansi=1; shift ;;
+            *) [ -z "$target" ] || usage_error "read takes one target"; target=$1; shift ;;
+        esac
+    done
+    [ -n "$target" ] || usage_error "read needs a target"
+    pane=$(resolve "$target")
+    [ "$visible" = 1 ] || args+=(-S "-$lines")
+    [ "$ansi" = 1 ] && args+=(-e)
+    # Drop the blank rows below the last output, then keep the last N lines.
+    tmux capture-pane "${args[@]}" -t "$pane" |
+        awk -v n="$lines" -v all="$visible" '{ l[NR] = $0 } NF { last = NR }
+            END { s = all ? 1 : last - n + 1; if (s < 1) s = 1; for (i = s; i <= last; i++) print l[i] }' |
+        cat -s
+}
+
+cmd_keys() {
+    [ "$#" -ge 2 ] || usage_error "keys needs <target> <key>..."
+    local pane key
+    pane=$(resolve "$1")
+    shift
+    not_self "$pane"
+    # Validate every key before sending any: tmux types unknown key names literally.
+    for key in "$@"; do
+        [[ "$key" =~ ^([CMS]-)*([[:alnum:]]|Enter|Escape|Tab|BTab|BSpace|Space|Up|Down|Left|Right|Home|End|PPage|NPage|PageUp|PageDown|IC|DC|F[0-9]|F1[0-2])$ ]] ||
+            die "not a tmux key name: '$key' (use Enter, Escape, C-c, Up, y, ...; send text with prompt)"
+    done
+    tmux send-keys -t "$pane" "$@"
+}
+
+main() {
+    [ "$#" -ge 1 ] || usage_error "missing command"
+    local command=$1
+    shift
+    case "$command" in
+        -h | --help | help) usage; return 0 ;;
+    esac
+    require_tmux
+    case "$command" in
+        list) [ "$#" -eq 0 ] || usage_error "list takes no arguments"; cmd_list ;;
+        get) cmd_get "$@" ;;
+        name) cmd_name "$@" ;;
+        start) cmd_start "$@" ;;
+        prompt) cmd_prompt "$@" ;;
+        wait) cmd_wait "$@" ;;
+        read) cmd_read "$@" ;;
+        keys) cmd_keys "$@" ;;
+        *) usage_error "unknown command: $command" ;;
+    esac
+}
+
+main "$@"
