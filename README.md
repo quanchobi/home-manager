@@ -27,7 +27,7 @@ home-manager switch --flake .
 | Configuration               | Adds                                                                 |
 | --------------------------- | -------------------------------------------------------------------- |
 | `anderson`                  | Personal git identity, SSH defaults, REA (reverse engineering)       |
-| `anderson@yappy-yiqi`       | The above, plus desktop omp extras (local models, MCP, CAD)          |
+| `anderson@yappy-yiqi`       | The above, plus desktop omp extras (local models, MCP, CAD, GUI)     |
 | `jacob.hanks@canonical.com` | Work git identity with signing and `send-email`, rustup, zsh vi-mode |
 
 Every standalone configuration also gets `modules/standalone.nix`:
@@ -89,8 +89,10 @@ latter documents. `users/anderson/rea` adds [REA]: the `rea` CLI, its MCP
 server, the `reverse-engineer-anything` skill, and the engines and tools REA
 drives (Ghidra, Kuna, JADX, Frida, firmware/capture/Android tooling). On the
 desktop, `users/anderson/desktop.nix` adds a llama.cpp provider at
-`127.0.0.1:8080`, FreeCAD/Blender/ComfyUI MCP servers, and the
-`freecad-design` skill.
+`127.0.0.1:8080`, FreeCAD/Blender/ComfyUI MCP servers, the `freecad-design`
+skill, and `users/anderson/niri-computer-use.nix`: [niri-computer-use] (the
+CLI, its MCP server, its skill and its policy file), which lets agents drive
+GUI apps in a background desktop of their own.
 
 **SSH.** `users/anderson/ssh.nix` sets connection multiplexing and keepalives
 only. Host blocks go in an untracked `~/.ssh/hosts`, which the generated
@@ -120,6 +122,12 @@ config includes, so hostnames stay out of this public repo.
   unicorn are overridden to the releases it names: a REA bump may move those.
   Ghidra is the default native engine; pick Kuna per target. IDA, Hopper and
   JEB are unfree and not configured. This adds about 3 GiB to the profile.
+- **niri-computer-use runs agents in a background desktop.** The policy file
+  turns on `[background]` with the host bus (snap FreeCAD dies on a private
+  one) and a `freecad` launch preset. It comes from the fork's flake, built
+  against `nixpkgs-unstable` for Rust 1.99. niri's own config isn't managed
+  here: it must end with `include "niri-computer-use.kdl"`, and should bind the
+  stop key to `~/.nix-profile/bin/niri-computer-use stop`.
 - **`stateVersion` is `24.05`.** Don't change it without reading the Home
   Manager release notes.
 
@@ -151,4 +159,5 @@ CI (`.github/workflows/check.yml`) runs `nix flake check` and builds every
 [quanchobi/nixvim]: https://github.com/quanchobi/nixvim
 [anthropics/skills]: https://github.com/anthropics/skills
 [canonical/openstack-agentic-skills]: https://github.com/canonical/openstack-agentic-skills
+[niri-computer-use]: https://github.com/quanchobi/niri-computer-use
 [REA]: https://github.com/morluto/rea

@@ -1,4 +1,5 @@
-# Desktop (yappy-yiqi) only: local llama.cpp models, CAD/ComfyUI MCP servers.
+# Desktop (yappy-yiqi) only: local llama.cpp models, CAD/ComfyUI MCP servers,
+# and niri-computer-use for agents that drive GUI apps.
 {
   config,
   pkgs,
@@ -29,6 +30,8 @@ let
 
 in
 {
+  imports = [ ./niri-computer-use.nix ];
+
   omp.mcpServers = {
     freecad = {
       type = "stdio";
@@ -68,7 +71,7 @@ in
       };
     };
 
-    # Drives the FreeCAD MCP server; needs FreeCAD (snap) and niri-agent.
+    # Drives the FreeCAD MCP server; needs FreeCAD (snap) and niri-computer-use.
     ".omp/agent/skills/freecad-design".source = freecadSkill;
   };
 }

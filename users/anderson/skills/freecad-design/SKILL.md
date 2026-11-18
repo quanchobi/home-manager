@@ -9,13 +9,18 @@ FreeCAD 1.1 (snap) + the `freecad-mcp` server. Tools appear as `mcp__freecad_*` 
 
 ## 1. Start FreeCAD
 
-FreeCAD does not run after a reboot. The MCP tools need its GUI RPC server (`127.0.0.1:9875`), which the addon auto-starts:
+FreeCAD does not run after a reboot. The MCP tools need its GUI RPC server (`127.0.0.1:9875`), which the addon auto-starts. Call `mcp__freecad_get_rpc_status` first; if it is not healthy, start FreeCAD in the niri-computer-use background desktop (read `skill://niri-computer-use` first), a nested niri of the agent's own that never touches the user's desktop:
 
-```bash
-~/.omp/agent/skills/freecad-design/scripts/start-freecad.sh    # idempotent; opens FreeCAD in niri-agent session "freecad"
-```
+1. `acquire_desktop`, then `launch {"preset": "freecad", "reuse": true}` (the policy's preset), then `release_desktop`.
+2. Wait for the addon's RPC server:
 
-It runs FreeCAD inside a private niri-agent session (see `skill://niri-agent`), so it never touches the user's desktop. Then call `mcp__freecad_get_rpc_status`; expect `"state": "healthy"` and `"version_check": "ok"`. When finished: `niri-agent stop freecad`.
+   ```bash
+   ~/.omp/agent/skills/freecad-design/scripts/wait-rpc.sh    # exits 0 once :9875 answers, 1 after 90 s
+   ```
+
+3. Call `mcp__freecad_get_rpc_status`; expect `"state": "healthy"` and `"version_check": "ok"`.
+
+Never `launch` again after a `launch` that reported no window: FreeCAD may still be starting, so run the wait script first. The background desktop, and FreeCAD with it, closes when the omp session ends; to quit earlier, `close_window` FreeCAD's window under the lease.
 
 If the `mcp__freecad_*` tools are missing from the session (config: `~/.omp/agent/mcp.json`), use the CLI client, which speaks the same MCP protocol:
 
@@ -42,7 +47,7 @@ Failures come back as text (`Failed to execute code: ...`, `Headless FreeCAD scr
 
 - **Snap sees a private `/tmp`.** Files FreeCAD writes to `/tmp` are invisible to the host and vice versa. Use non-hidden paths under `$HOME` (e.g. `~/<project>/`). Hidden dirs (`~/.cache`, `~/.config`) are unreadable to the snap.
 - **Headless needs a symlink:** the server writes scripts to `~/.cache/freecad-mcp/headless`, which is a symlink to `~/snap/freecad/common/mcp-headless`. If headless fails with `PermissionError ... .cache/freecad-mcp/headless`, recreate it: `rm -rf ~/.cache/freecad-mcp/headless && ln -s ~/snap/freecad/common/mcp-headless ~/.cache/freecad-mcp/headless`.
-- **niri-agent needs `--host-bus` for the snap.** On the private bus snapd cannot create its systemd scope and FreeCAD exits instantly (the start script handles this).
+- **The background desktop uses the host bus for the snap** (`bus = "host"` in `~/.config/niri-computer-use/policy.toml`). On a private bus snapd cannot create its systemd scope and FreeCAD exits instantly.
 - **Addon/server sync:** addon lives in `~/snap/freecad/common/Mod/FreeCADMCP` (copied from github.com/neka-nat/freecad-mcp `addon/FreeCADMCP`); server is `@freecadMcp@` from PyPI, pinned in the home-manager config (`users/anderson/desktop.nix`). If `version_check` is not `ok`, re-copy the addon from the matching tag (`git clone --branch v<version>`) and restart FreeCAD. Addon settings: `~/snap/freecad/common/freecad_mcp_settings.json` (`auto_start_rpc: true`).
 - `execute_code` scripts share one persistent namespace; re-running a build script should `App.closeDocument(NAME)` first.
 

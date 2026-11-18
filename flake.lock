@@ -75,6 +75,26 @@
         "type": "github"
       }
     },
+    "niri-computer-use": {
+      "inputs": {
+        "nixpkgs": [
+          "nixpkgs-unstable"
+        ]
+      },
+      "locked": {
+        "lastModified": 1795034073,
+        "narHash": "sha256-edDOXa0oE9glTzEZHbvwtD8Sxo2j3PUCKS8ugOiKJa0=",
+        "owner": "quanchobi",
+        "repo": "niri-computer-use",
+        "rev": "b80d3562214a7cd23cdbc57b3056ac4c4faec3e6",
+        "type": "github"
+      },
+      "original": {
+        "owner": "quanchobi",
+        "repo": "niri-computer-use",
+        "type": "github"
+      }
+    },
     "nixpkgs": {
       "locked": {
         "lastModified": 1794165970,
@@ -211,6 +231,7 @@
         "anthropic-skills": "anthropic-skills",
         "fzf-tab": "fzf-tab",
         "home-manager": "home-manager",
+        "niri-computer-use": "niri-computer-use",
         "nixpkgs": "nixpkgs",
         "nixpkgs-unstable": "nixpkgs-unstable",
         "nixvim": "nixvim",

@@ -23,12 +23,20 @@
 
     nixpkgs.url = "github:nixos/nixpkgs/nixos-26.05";
 
-    # Only for packages nixos-26.05 lacks or has too old (users/anderson/rea).
+    # Only for packages nixos-26.05 lacks or has too old (users/anderson/rea,
+    # niri-computer-use).
     nixpkgs-unstable.url = "github:nixos/nixpkgs/nixos-unstable";
 
     home-manager = {
       url = "github:nix-community/home-manager/release-26.05";
       inputs.nixpkgs.follows = "nixpkgs";
+    };
+
+    # The fork with background desktops (users/anderson/niri-computer-use.nix);
+    # it needs Rust 1.99, so it builds against nixos-unstable.
+    niri-computer-use = {
+      url = "github:quanchobi/niri-computer-use";
+      inputs.nixpkgs.follows = "nixpkgs-unstable";
     };
 
     openstack-agentic-skills = {
