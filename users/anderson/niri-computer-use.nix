@@ -35,6 +35,7 @@ in
   xdg.configFile."niri-computer-use/policy.toml".source =
     (pkgs.formats.toml { }).generate "niri-computer-use-policy.toml"
       {
+        unrestricted = true;
         # The host bus: snap FreeCAD exits at once on a private one, since snapd
         # cannot create its systemd scope there.
         background = {
@@ -44,11 +45,34 @@ in
         };
 
         # freecad-design starts FreeCAD in the background desktop with this.
+        # app_id is what `launch` waits for; a wrong one still starts the app
+        # but reports `observed: none`.
         preset = [
           {
             name = "freecad";
             argv = [ "/snap/bin/freecad" ];
             app_id = "FreeCAD";
+          }
+          {
+            # Qt's setDesktopFileName in src/lichii/main.cpp sets the app_id.
+            name = "lichii";
+            argv = [ "/home/anderson/.local/bin/lichii-linux-x86_64.AppImage" ];
+            app_id = "io.github.zortos293.lichii";
+          }
+          {
+            name = "blender";
+            argv = [ "/snap/bin/blender" ];
+            app_id = "blender";
+          }
+          {
+            # The policy allows `flatpak run` of an app, but not `--command`.
+            name = "orca-slicer";
+            argv = [
+              "/usr/bin/flatpak"
+              "run"
+              "com.orcaslicer.OrcaSlicer"
+            ];
+            app_id = "com.orcaslicer.OrcaSlicer";
           }
         ];
       };

@@ -76,7 +76,8 @@ A user directory holds only what differs from `modules/`.
 ## What's in it
 
 **Shell.** zsh (autosuggestions, syntax highlighting, [fzf-tab] from master),
-starship, tmux with [tmux-agent-indicator] and sesh, fzf, carapace completions
+starship, tmux with [tmux-agent-indicator], [tmux-agent-picker] (`prefix`+`a`
+fuzzy-finds agent panes) and sesh, fzf, carapace completions
 rendered through fzf-tab, eza, zoxide as `cd`, atuin, direnv with nix-direnv,
 git, and Neovim from [quanchobi/nixvim]. One-off tools that need no
 configuration come from the host's package manager instead.
@@ -124,7 +125,8 @@ config includes, so hostnames stay out of this public repo.
   JEB are unfree and not configured. This adds about 3 GiB to the profile.
 - **niri-computer-use runs agents in a background desktop.** The policy file
   turns on `[background]` with the host bus (snap FreeCAD dies on a private
-  one) and a `freecad` launch preset. It comes from the fork's flake, built
+  one) and launch presets for `freecad`, `lichii`, `blender` and
+  `orca-slicer`. It comes from the fork's flake, built
   against `nixpkgs-unstable` for Rust 1.99. niri's own config isn't managed
   here: it must end with `include "niri-computer-use.kdl"`, and should bind the
   stop key to `~/.nix-profile/bin/niri-computer-use stop`.
@@ -156,6 +158,7 @@ CI (`.github/workflows/check.yml`) runs `nix flake check` and builds every
 
 [fzf-tab]: https://github.com/Aloxaf/fzf-tab
 [tmux-agent-indicator]: https://github.com/quanchobi/tmux-agent-indicator
+[tmux-agent-picker]: https://github.com/quanchobi/tmux-agent-picker
 [quanchobi/nixvim]: https://github.com/quanchobi/nixvim
 [anthropics/skills]: https://github.com/anthropics/skills
 [canonical/openstack-agentic-skills]: https://github.com/canonical/openstack-agentic-skills

@@ -49,6 +49,12 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
+    # Local checkout until it is pushed; then github:quanchobi/tmux-agent-picker.
+    tmux-agent-picker = {
+      url = "github:quanchobi/tmux-agent-picker";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+
     treefmt-nix = {
       url = "github:numtide/treefmt-nix";
       inputs.nixpkgs.follows = "nixpkgs";
@@ -62,6 +68,7 @@
       nixvim,
       self,
       tmux-agent-indicator,
+      tmux-agent-picker,
       treefmt-nix,
       ...
     }@inputs:
@@ -76,6 +83,7 @@
       sharedModules = [
         nixvim.homeModules.default
         tmux-agent-indicator.homeModules.default
+        tmux-agent-picker.homeModules.default
       ];
 
       # Standalone (non-NixOS) home-manager config for one host architecture,

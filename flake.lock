@@ -237,6 +237,7 @@
         "nixvim": "nixvim",
         "openstack-agentic-skills": "openstack-agentic-skills",
         "tmux-agent-indicator": "tmux-agent-indicator",
+        "tmux-agent-picker": "tmux-agent-picker",
         "treefmt-nix": "treefmt-nix"
       }
     },
@@ -274,6 +275,26 @@
       "original": {
         "owner": "quanchobi",
         "repo": "tmux-agent-indicator",
+        "type": "github"
+      }
+    },
+    "tmux-agent-picker": {
+      "inputs": {
+        "nixpkgs": [
+          "nixpkgs"
+        ]
+      },
+      "locked": {
+        "lastModified": 1795187833,
+        "narHash": "sha256-b7bJObkKwtmjv04VrPmf6j7hueQu6hgakGjhAp5ywOc=",
+        "owner": "quanchobi",
+        "repo": "tmux-agent-picker",
+        "rev": "47ec0c16b76b7f36562bc76735b3f370b81bcd62",
+        "type": "github"
+      },
+      "original": {
+        "owner": "quanchobi",
+        "repo": "tmux-agent-picker",
         "type": "github"
       }
     },

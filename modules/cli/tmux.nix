@@ -45,6 +45,9 @@ in
         omp.enable = true;
       };
     };
+    # prefix+a: fzf popup of the agents in every pane, most urgent first, with
+    # a preview of the selected agent's screen.
+    agentPicker.enable = true;
     extraConfig = ''
       # Pass truecolor through to the outer terminal
         set -as terminal-features ",*:RGB"
